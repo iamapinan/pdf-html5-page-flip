@@ -1,0 +1,125 @@
+#magazineViewButtonContainer{
+    display: none;
+   
+}
+
+#magazineViewButtonContainer button span,#magazineViewButtonContainer .toolbarButton {
+    width: auto;
+    height: auto;
+    margin-left: -50%;
+}
+
+#magazineContainer{
+    padding-top: 10px;
+    text-align: center;
+    overflow: hidden;
+}
+
+#magazine {
+    margin: 0 auto !important;
+    text-align: center;
+}
+
+#magazine .page {
+    background-color: #fff;
+}
+
+#magazineContainer .next-button,
+#magazineContainer .previous-button{
+	width:22px;
+	height: 100%;
+	position:absolute;
+	top:0;
+}
+
+#magazineContainer .next-button{
+	right:-22px;
+	-webkit-border-radius:0 15px 15px 0;
+	-moz-border-radius:0 15px 15px 0;
+	-ms-border-radius:0 15px 15px 0;
+	-o-border-radius:0 15px 15px 0;
+	border-radius:0 15px 15px 0;
+}
+
+#magazineContainer .previous-button{
+	left:-22px;
+	-webkit-border-radius:15px 0 0 15px;
+	-moz-border-radius:15px 0 0 15px;
+	-ms-border-radius:15px 0 0 15px;
+	-o-border-radius:15px 0 0 15px;
+	border-radius:15px 0 0 15px;
+}
+
+#magazineContainer .previous-button:hover,
+#magazineContainer .next-button-hover{
+	background-color:rgba(0,0,0, 0.2);
+}
+
+#magazineContainer .previous-button,
+#magazineContainer .previous-button-down{
+	background-image: url(images/arrows.png);
+	background-position:-4px 50%;
+	background-repeat:no-repeat;
+}
+
+#magazineContainer .previous-button,
+#magazineContainer .next-button:hover{
+	background-color:rgba(0,0,0, 0.4);
+}
+
+#magazineContainer .next-button,
+#magazineContainer .next-button-down{
+	background-image: url(images/arrows.png);
+	background-position:-38px 50%;
+	background-repeat:no-repeat;
+}
+
+#magazineContainer .zoom-in .next-button,
+#magazineContainer .zoom-in .previous-button{
+	display:none;
+}
+
+.icon-holder {
+    position: absolute;
+    z-index: 1000;
+    width: 44px;
+    top: 10px;
+    right: 10px;
+}
+
+.exit-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    border: solid 1px #fff;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url(images/toolbarButton-Exit.png);
+}
+
+.zoom-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    border: solid 1px #fff;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-image: url(images/toolbarButton-search@2x.png);
+}
+
+.zoom-icon-in{
+
+}
+
+.zoom-icon-out{
+         background-color: #a4a4a4;
+}
+
+
+#mainContainer{
+    overflow: hidden;
+
+}
