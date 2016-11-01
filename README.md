@@ -1,5 +1,3 @@
-to a# pdfjs-flipbook
-
 pdf.js + turn.js => flipbook
 
 Installation:
