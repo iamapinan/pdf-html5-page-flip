@@ -6,4 +6,6 @@ Installation:
 
 - Call by your browser http://your.domain.com/pdfjs-flipbook/web/viewer.html?file=pdf.pdf
 
-- Details: http://www.link-infotec.co.uk/articles/pdfjs-and-turnjs-magazine-viewer/
+- Details: http://www.link-infotec.co.uk/articles/pdfjs-and-turnjs-magazine-viewer/ BROKEN LINK!!!
+
+- Some samples: https://www.google.hu/search?q=pdfjs-and-turnjs-magazine-viewer&ie=&oe=
