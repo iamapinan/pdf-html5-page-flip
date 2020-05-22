@@ -12,7 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ .page-wrapper {
+  border-left: 1px solid #e4e4e4;
+}
 .textLayer {
   position: absolute;
   left: 0;
@@ -174,7 +176,7 @@ html {
 
 body {
   height: 100%;
-  background-color: #404040;
+  background-color: #f5f0db;
   background-image: url(images/texture.png);
 }
 

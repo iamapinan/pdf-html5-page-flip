@@ -38,7 +38,8 @@
 	-moz-border-radius:0 15px 15px 0;
 	-ms-border-radius:0 15px 15px 0;
 	-o-border-radius:0 15px 15px 0;
-	border-radius:0 15px 15px 0;
+    border-radius:0 15px 15px 0;
+    background-color:rgba(0,0,0, 0.2);
 }
 
 #magazineContainer .previous-button{
@@ -91,11 +92,12 @@
     width: 44px;
     height: 44px;
     border-radius: 22px;
-    border: solid 1px #fff;
     margin-bottom: 5px;
     cursor: pointer;
+    zoom: 0.8;
     background-repeat: no-repeat;
     background-position: center;
+    background-color: #363636;
     background-image: url(images/toolbarButton-Exit.png);
 }
 
@@ -103,8 +105,9 @@
     width: 44px;
     height: 44px;
     border-radius: 22px;
-    border: solid 1px #fff;
     cursor: pointer;
+    zoom: 0.8;
+    background-color: #363636;
     background-repeat: no-repeat;
     background-position: center;
     background-image: url(images/toolbarButton-search@2x.png);

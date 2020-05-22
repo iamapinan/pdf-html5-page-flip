@@ -38,8 +38,8 @@ var PAGE_NUMBER_LOADING_INDICATOR = 'visiblePageIsLoading';
 var DISABLE_AUTO_FETCH_LOADING_BAR_TIMEOUT = 5000;
 
 PDFJS.imageResourcesPath = './images/';
-  PDFJS.workerSrc = '../build/pdf.worker.js';
-  PDFJS.cMapUrl = '../web/cmaps/';
+  PDFJS.workerSrc = 'build/pdf.worker.js';
+  PDFJS.cMapUrl = 'web/cmaps/';
   PDFJS.cMapPacked = true;
 
 var mozL10n = document.mozL10n || document.webL10n;
@@ -5414,12 +5414,6 @@ var PDFViewerApplication = {
       self.documentInfo = info;
       self.metadata = metadata;
 
-      // Provides some basic debug information
-      console.log('PDF ' + pdfDocument.fingerprint + ' [' +
-                  info.PDFFormatVersion + ' ' + (info.Producer || '-').trim() +
-                  ' / ' + (info.Creator || '-').trim() + ']' +
-                  ' (PDF.js: ' + (PDFJS.version || '-') +
-                  (!PDFJS.disableWebGL ? ' [WebGL]' : '') + ')');
 
       var pdfTitle;
       if (metadata && metadata.has('dc:title')) {

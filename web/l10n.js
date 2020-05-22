@@ -85,7 +85,7 @@ document.webL10n = (function(window, document, undefined) {
       try {
         args = JSON.parse(l10nArgs);
       } catch (e) {
-        console.warn('could not parse arguments for #' + l10nId);
+        //
       }
     }
     return { id: l10nId, args: args };
@@ -101,7 +101,7 @@ document.webL10n = (function(window, document, undefined) {
   function xhrLoadText(url, onSuccess, onFailure, asynchronous) {
     onSuccess = onSuccess || function _onSuccess(data) {};
     onFailure = onFailure || function _onFailure() {
-      console.warn(url + ' not found.');
+      //
     };
 
     var xhr = new XMLHttpRequest();
@@ -312,7 +312,7 @@ document.webL10n = (function(window, document, undefined) {
       this.load = function(lang, callback) {
         var applied = lang;
         parseResource(href, lang, callback, function() {
-          console.warn(href + ' not found.');
+          //
           applied = '';
         });
         return applied; // return lang if found, an empty string if not found
@@ -323,7 +323,7 @@ document.webL10n = (function(window, document, undefined) {
       var resource = new L10nResourceLink(langLinks[i]);
       var rv = resource.load(lang, onResourceLoaded);
       if (rv != lang) { // lang not found, used default resource instead
-        console.warn('"' + lang + '" resource not found');
+        //
         gLanguage = '';
       }
     }
@@ -744,7 +744,7 @@ document.webL10n = (function(window, document, undefined) {
     // return a function that gives the plural form name for a given integer
     var index = locales2rules[lang.replace(/-.*$/, '')];
     if (!(index in pluralRules)) {
-      console.warn('plural form unknown for [' + lang + ']');
+      //
       return function() { return 'other'; };
     }
     return pluralRules[index];
@@ -791,7 +791,7 @@ document.webL10n = (function(window, document, undefined) {
   function getL10nData(key, args, fallback) {
     var data = gL10nData[key];
     if (!data) {
-      console.warn('#' + key + ' is undefined.');
+      //
       if (!fallback) {
         return null;
       }
@@ -874,7 +874,7 @@ document.webL10n = (function(window, document, undefined) {
     // get the related l10n object
     var data = getL10nData(l10n.id, l10n.args);
     if (!data) {
-      console.warn('#' + l10n.id + ' is undefined.');
+      //
       return;
     }
 

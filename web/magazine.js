@@ -42,7 +42,7 @@ var MagazineView = {
             $("#magazine").turn('next');
         });
 		
-		if(window.location.hash.indexOf('magazineMode=true') > -1)
+		if(window.location.hash.indexOf('magazineMode=true') == -1)
         {
 			document.addEventListener("pagesloaded", MagazineView.launchMagazineMode, true);
         }
@@ -115,7 +115,7 @@ var MagazineView = {
                 pages: PDFViewerApplication.pdfDocument.numPages,
                 page: 1,
                 elevation: 100,
-                duration: 600,
+                duration: 1000,
                 acceleration: !MagazineView.isChrome(),
                 when: {
                     missing: function (event, pages) {
