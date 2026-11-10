@@ -161,7 +161,19 @@ pdf-html5-page-flip/
 
 ---
 
+## 👥 Contributors
+
+<p align="left">
+  <a href="https://github.com/iamapinan">
+    <img src="https://github.com/iamapinan.png?size=80" width="80" height="80" alt="iamapinan" style="border-radius: 50%;" />
+  </a>
+</p>
+
+[![Contributors](https://contrib.rocks/image?repo=iamapinan/pdf-html5-page-flip)](https://github.com/iamapinan/pdf-html5-page-flip/graphs/contributors)
+
+---
+
 ## 📄 License
 
-Open-source licensed under the [MIT License](LICENSE).
+Open-source licensed under the [MIT License](LICENSE).  
 Created and maintained by [iamapinan](https://github.com/iamapinan).
