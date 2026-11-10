@@ -1,4 +1,4 @@
-# PDF HTML5 Page Flip Pro (`@iamapinan/pdf-html5-page-flip`)
+# PDF HTML5 Page Flip Pro (`pdf-html5-page-flip`)
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -39,15 +39,15 @@ Configure your project `.npmrc` to route the `@iamapinan` scope to GitHub Packag
 Install the package:
 
 ```bash
-npm install @iamapinan/pdf-html5-page-flip
+npm install pdf-html5-page-flip
 ```
 
 ### 2. Basic Usage
 
 ```tsx
 import React from 'react';
-import { PdfFlipbook } from '@iamapinan/pdf-html5-page-flip/react';
-import '@iamapinan/pdf-html5-page-flip/style.css';
+import { PdfFlipbook } from 'pdf-html5-page-flip/react';
+import 'pdf-html5-page-flip/style.css';
 
 export default function DocumentViewer() {
   return (

@@ -1,6 +1,6 @@
 {
-  "name": "@iamapinan/pdf-html5-page-flip",
-  "version": "2.0.0",
+  "name": "pdf-html5-page-flip",
+  "version": "2.0.1",
   "description": "Realistic 3D HTML5 PDF Flipbook with React component, Web Component, and Web Audio synthesis",
   "license": "Apache-2.0",
   "author": "Apinan Worawut <iamapinan@gmail.com>",
@@ -103,6 +103,7 @@
     "vite": "^6.2.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
