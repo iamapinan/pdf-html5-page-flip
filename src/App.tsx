@@ -37,6 +37,7 @@ export function App() {
   const [config, setConfig] = useState({
     theme: 'dark' as 'dark' | 'light' | 'wood',
     mode: 'auto' as 'auto' | 'single' | 'double',
+    flippingTime: 800,
     stageHeight: 'medium' as 'compact' | 'medium' | 'large' | 'viewport',
     accentColor: '#6366f1',
     showLogo: true,
@@ -142,6 +143,7 @@ export function App() {
       `  src="${typeof pdfSource === 'string' ? pdfSource : fileName}"`,
       config.theme !== 'dark' ? `  theme="${config.theme}"` : null,
       config.mode !== 'auto' ? `  mode="${config.mode}"` : null,
+      config.flippingTime !== 800 ? `  flippingTime={${config.flippingTime}}` : null,
       config.accentColor !== '#6366f1' ? `  accentColor="${config.accentColor}"` : null,
       !config.showLogo ? `  showLogo={false}` : null,
       !config.showToolbar ? `  showToolbar={false}` : null,
@@ -392,6 +394,7 @@ ${propLines}
               src={pdfSource}
               theme={config.theme}
               mode={config.mode}
+              flippingTime={config.flippingTime}
               accentColor={config.accentColor}
               showLogo={config.showLogo}
               showToolbar={config.showToolbar}
@@ -542,6 +545,45 @@ ${propLines}
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Flip Animation & Smoothness */}
+            <div className="mb-5 border-b border-white/10 pb-5">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-slate-400 text-[11px] font-medium">Flip Smoothness & Physics</label>
+                <span className="font-mono text-[10px] text-white px-1.5 py-0.5 rounded bg-black/40">
+                  {config.flippingTime}ms
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 mb-2.5">
+                {[
+                  { time: 1000, label: 'Cinematic (1000ms)' },
+                  { time: 800, label: 'Smooth (800ms)' },
+                  { time: 600, label: 'Balanced (600ms)' },
+                  { time: 400, label: 'Snappy (400ms)' },
+                ].map(({ time, label }) => (
+                  <button
+                    key={time}
+                    onClick={() => setConfig(c => ({ ...c, flippingTime: time }))}
+                    className={`py-1.5 px-2 rounded font-medium cursor-pointer transition-colors text-center ${
+                      config.flippingTime === time ? 'text-white' : 'bg-black/30 text-slate-400 hover:text-white'
+                    }`}
+                    style={{ backgroundColor: config.flippingTime === time ? config.accentColor : undefined }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="range"
+                min="300"
+                max="1500"
+                step="50"
+                value={config.flippingTime}
+                onChange={e => setConfig(c => ({ ...c, flippingTime: Number(e.target.value) }))}
+                className="w-full cursor-pointer"
+                style={{ accentColor: config.accentColor }}
+              />
             </div>
 
             {/* Feature & Toolbar Toggles (100% Functional) */}
