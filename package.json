@@ -1,6 +1,6 @@
 {
   "name": "pdf-html5-page-flip",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Realistic 3D HTML5 PDF Flipbook with React component, Web Component, and Web Audio synthesis",
   "license": "Apache-2.0",
   "author": "Apinan Worawut <iamapinan@gmail.com>",
