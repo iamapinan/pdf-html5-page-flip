@@ -21,8 +21,8 @@ import { PdfFlipbook } from './react/PdfFlipbook';
 
 export function App() {
   // Source State: URL or File
-  const [pdfSource, setPdfSource] = useState<string | File>('/sample.pdf');
-  const [fileName, setFileName] = useState<string>('sample.pdf');
+  const [pdfSource, setPdfSource] = useState<string | File>('/demo-document.pdf');
+  const [fileName, setFileName] = useState<string>('demo-document.pdf');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
 
@@ -332,7 +332,7 @@ ${propLines}
                 <button
                   type="button"
                   onClick={() => {
-                    const url = 'https://raw.githubusercontent.com/iamapinan/pdf-html5-page-flip/master/public/sample.pdf';
+                    const url = 'https://raw.githubusercontent.com/iamapinan/pdf-html5-page-flip/master/public/demo-document.pdf';
                     setRemoteUrlInput(url);
                   }}
                   className="px-2 py-0.5 bg-white/5 hover:bg-white/10 rounded text-slate-300 border border-white/5 cursor-pointer"
@@ -628,8 +628,8 @@ ${propLines}
             <div className="space-y-2 pt-2 border-t border-white/10">
               <button
                 onClick={() => {
-                  setPdfSource('/sample.pdf');
-                  setFileName('sample.pdf');
+                  setPdfSource('/demo-document.pdf');
+                  setFileName('demo-document.pdf');
                   window.history.pushState({}, '', window.location.pathname);
                 }}
                 className="w-full py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-lg transition-colors font-medium text-center cursor-pointer"
