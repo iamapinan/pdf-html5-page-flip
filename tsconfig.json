@@ -6,6 +6,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "strict": true,
+    "jsx": "react-jsx",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
