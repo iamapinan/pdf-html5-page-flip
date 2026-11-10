@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist/types",
+    "declarationMap": false
+  },
+  "include": ["src/index.ts", "src/react/**/*", "src/component.ts", "src/sound.ts", "src/types.d.ts"]
+}

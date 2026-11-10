@@ -1,0 +1,269 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R 8 0 R] /Count 6 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 10 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 11 0 R >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 12 0 R >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 13 0 R >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 14 0 R >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 9 0 R >> >> /Contents 15 0 R >>
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+10 0 obj
+<< /Length 904 >>
+stream
+0.08 0.11 0.18 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 822 595 20 re f
+0.12 0.16 0.26 rg
+50 200 495 560 re f
+0.24 0.28 0.40 RG
+1.5 w
+50 200 495 560 re S
+1 1 1 rg
+BT /F1 32 Tf 80 670 Td (PDF HTML5 PAGE FLIP) Tj ET
+0.39 0.65 1.0 rg
+BT /F1 16 Tf 80 635 Td (Next-Gen 3D Digital Flipbook Engine) Tj ET
+0.3 0.35 0.5 RG
+1 w
+80 610 m 515 610 l S
+0.85 0.88 0.92 rg
+BT /F1 13 Tf 80 560 Td (Open-Source Synthetic Showcase Document) Tj ET
+0.60 0.65 0.75 rg
+BT /F1 11 Tf 80 530 Td (This document is purely generated for rendering and performance testing.) Tj ET
+BT /F1 11 Tf 80 505 Td (Contains zero private or customer-specific information.) Tj ET
+BT /F1 11 Tf 80 480 Td (Built with Vite, TypeScript, PDF.js, and HTML5 Canvas.) Tj ET
+0.2 0.25 0.38 rg
+80 400 160 32 re f
+0.4 0.7 1 rg
+BT /F1 10 Tf 95 412 Td (60 FPS HARDWARE ACCEL) Tj ET
+0.45 0.5 0.6 rg
+BT /F1 10 Tf 80 120 Td (Sample Demo Edition - Page 1 of 6) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Length 1275 >>
+stream
+0.98 0.98 0.99 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 832 595 10 re f
+0.1 0.12 0.18 rg
+BT /F1 22 Tf 60 760 Td (1. Architecture & Rendering Engine) Tj ET
+0.4 0.45 0.5 rg
+BT /F1 10 Tf 60 740 Td (HIGH PERFORMANCE CLIENT-SIDE PDF RENDERING) Tj ET
+0.85 0.87 0.90 RG
+1 w
+60 725 m 535 725 l S
+0.2 0.22 0.28 rg
+BT /F1 12 Tf 60 690 Td (Off-Main-Thread Processing with Web Workers) Tj ET
+0.4 0.42 0.48 rg
+BT /F1 10 Tf 60 670 Td (Mozilla PDF.js decodes PDF binary streams inside a dedicated worker,) Tj ET
+BT /F1 10 Tf 60 655 Td (preventing UI thread freezes during intensive document rasterization.) Tj ET
+0.94 0.95 0.98 rg
+60 480 475 140 re f
+0.8 0.85 0.95 RG
+1 w
+60 480 475 140 re S
+0.15 0.2 0.4 rg
+BT /F1 11 Tf 80 590 Td (Rendering Pipeline Highlights:) Tj ET
+0.3 0.35 0.4 rg
+BT /F1 10 Tf 80 565 Td (- HiDPI & Retina display automatic viewport devicePixelRatio scaling) Tj ET
+BT /F1 10 Tf 80 545 Td (- Lazy virtualization rendering: only visible pages render to canvas) Tj ET
+BT /F1 10 Tf 80 525 Td (- Active RenderTask cancellation on rapid user page flipping) Tj ET
+BT /F1 10 Tf 80 505 Td (- 3D curved spine shadow and realistic paper curl simulation) Tj ET
+0.6 0.6 0.6 rg
+BT /F1 9 Tf 60 50 Td (PDF HTML5 Page Flip - Demo Specification) Tj ET
+BT /F1 9 Tf 500 50 Td (Page 2) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Length 1275 >>
+stream
+0.98 0.98 0.99 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 832 595 10 re f
+0.1 0.12 0.18 rg
+BT /F1 22 Tf 60 760 Td (2. Performance Benchmarks) Tj ET
+0.4 0.45 0.5 rg
+BT /F1 10 Tf 60 740 Td (COMPUTATIONAL EFFICIENCY ON DESKTOP AND MOBILE) Tj ET
+0.85 0.87 0.90 RG
+1 w
+60 725 m 535 725 l S
+0.15 0.18 0.25 rg
+60 660 475 30 re f
+1 1 1 rg
+BT /F1 10 Tf 75 672 Td (Feature / Capability) Tj ET
+BT /F1 10 Tf 270 672 Td (Legacy Turn.js) Tj ET
+BT /F1 10 Tf 410 672 Td (Page Flip Pro v2) Tj ET
+0.95 0.96 0.98 rg
+60 625 475 35 re f
+0.2 0.2 0.2 rg
+BT /F1 10 Tf 75 638 Td (Touch & Swipe Support) Tj ET
+0.5 0.5 0.5 rg
+BT /F1 10 Tf 270 638 Td (Limited (jQuery)) Tj ET
+0.1 0.5 0.2 rg
+BT /F1 10 Tf 410 638 Td (Native Touch Events) Tj ET
+1 1 1 rg
+60 590 475 35 re f
+0.2 0.2 0.2 rg
+BT /F1 10 Tf 75 603 Td (Animation Easing & FPS) Tj ET
+0.5 0.5 0.5 rg
+BT /F1 10 Tf 270 603 Td (~30-45 FPS) Tj ET
+0.1 0.5 0.2 rg
+BT /F1 10 Tf 410 603 Td (Solid 60 FPS (GPU)) Tj ET
+0.95 0.96 0.98 rg
+60 555 475 35 re f
+0.2 0.2 0.2 rg
+BT /F1 10 Tf 75 568 Td (Audio Synthesis) Tj ET
+0.5 0.5 0.5 rg
+BT /F1 10 Tf 270 568 Td (Audio Element) Tj ET
+0.1 0.5 0.2 rg
+BT /F1 10 Tf 410 568 Td (Web Audio API) Tj ET
+0.6 0.6 0.6 rg
+BT /F1 9 Tf 60 50 Td (PDF HTML5 Page Flip - Demo Specification) Tj ET
+BT /F1 9 Tf 500 50 Td (Page 3) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Length 1068 >>
+stream
+0.98 0.98 0.99 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 832 595 10 re f
+0.1 0.12 0.18 rg
+BT /F1 22 Tf 60 760 Td (3. React Component Usage) Tj ET
+0.4 0.45 0.5 rg
+BT /F1 10 Tf 60 740 Td (ZERO-CONFIGURATION MODERN FRONTEND WORKFLOW) Tj ET
+0.85 0.87 0.90 RG
+1 w
+60 725 m 535 725 l S
+0.1 0.12 0.16 rg
+60 480 475 220 re f
+0.3 0.6 1.0 rg
+BT /F1 10 Tf 80 670 Td (// Install package from npm) Tj ET
+1 1 1 rg
+BT /F1 10 Tf 80 650 Td (npm install pdf-html5-page-flip) Tj ET
+0.3 0.6 1.0 rg
+BT /F1 10 Tf 80 620 Td (// Import in your Next.js / React application) Tj ET
+0.9 0.7 0.3 rg
+BT /F1 10 Tf 80 600 Td (import { PdfFlipbook } from 'pdf-html5-page-flip/react';) Tj ET
+BT /F1 10 Tf 80 580 Td (import 'pdf-html5-page-flip/style.css';) Tj ET
+1 1 1 rg
+BT /F1 10 Tf 80 550 Td (export default function Reader() {) Tj ET
+0.7 0.9 0.7 rg
+BT /F1 10 Tf 100 530 Td (return <PdfFlipbook src="/my-book.pdf" theme="dark" />;) Tj ET
+1 1 1 rg
+BT /F1 10 Tf 80 510 Td (}) Tj ET
+0.6 0.6 0.6 rg
+BT /F1 9 Tf 60 50 Td (PDF HTML5 Page Flip - Demo Specification) Tj ET
+BT /F1 9 Tf 500 50 Td (Page 4) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Length 1069 >>
+stream
+0.98 0.98 0.99 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 832 595 10 re f
+0.1 0.12 0.18 rg
+BT /F1 22 Tf 60 760 Td (4. Interactive Controls) Tj ET
+0.4 0.45 0.5 rg
+BT /F1 10 Tf 60 740 Td (INTUITIVE NAVIGATION AND READING TOOLS) Tj ET
+0.85 0.87 0.90 RG
+1 w
+60 725 m 535 725 l S
+0.95 0.96 0.99 rg
+60 580 230 120 re f
+0.85 0.88 0.95 RG
+1 w
+60 580 230 120 re S
+0.1 0.2 0.4 rg
+BT /F1 12 Tf 75 665 Td (Keyboard Shortcuts) Tj ET
+0.3 0.35 0.4 rg
+BT /F1 9 Tf 75 640 Td (Left / Right Arrows : Prev / Next) Tj ET
+BT /F1 9 Tf 75 620 Td (Home / End : First / Last Page) Tj ET
+BT /F1 9 Tf 75 600 Td (F Key : Toggle Fullscreen) Tj ET
+0.95 0.96 0.99 rg
+305 580 230 120 re f
+0.85 0.88 0.95 RG
+1 w
+305 580 230 120 re S
+0.1 0.2 0.4 rg
+BT /F1 12 Tf 320 665 Td (Sidebar & Tools) Tj ET
+0.3 0.35 0.4 rg
+BT /F1 9 Tf 320 640 Td (Outline : Hierarchical TOC) Tj ET
+BT /F1 9 Tf 320 620 Td (Search : Full-text query) Tj ET
+BT /F1 9 Tf 320 600 Td (Thumbnails : Visual preview) Tj ET
+0.6 0.6 0.6 rg
+BT /F1 9 Tf 60 50 Td (PDF HTML5 Page Flip - Demo Specification) Tj ET
+BT /F1 9 Tf 500 50 Td (Page 5) Tj ET
+endstream
+endobj
+15 0 obj
+<< /Length 592 >>
+stream
+0.08 0.11 0.18 rg
+0 0 595 842 re f
+0.39 0.40 0.95 rg
+0 0 595 20 re f
+1 1 1 rg
+BT /F1 26 Tf 80 650 Td (Ready to Embed in Your App) Tj ET
+0.6 0.7 0.85 rg
+BT /F1 12 Tf 80 615 Td (Deploy with zero dependencies on modern browser standards.) Tj ET
+0.3 0.35 0.5 RG
+1 w
+80 580 m 515 580 l S
+0.8 0.85 0.9 rg
+BT /F1 11 Tf 80 530 Td (License: Apache License 2.0) Tj ET
+BT /F1 11 Tf 80 500 Td (Repository: github.com/iamapinan/pdf-html5-page-flip) Tj ET
+BT /F1 11 Tf 80 470 Td (Live Demo: https://flipbook.apps.gracer.ai) Tj ET
+0.4 0.5 0.65 rg
+BT /F1 10 Tf 80 120 Td (End of Document - Page 6 of 6) Tj ET
+endstream
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000151 00000 n 
+0000000278 00000 n 
+0000000405 00000 n 
+0000000532 00000 n 
+0000000659 00000 n 
+0000000786 00000 n 
+0000000913 00000 n 
+0000000988 00000 n 
+0000001944 00000 n 
+0000003272 00000 n 
+0000004600 00000 n 
+0000005721 00000 n 
+0000006843 00000 n 
+trailer
+<< /Size 16 /Root 1 0 R >>
+startxref
+7487
+%%EOF

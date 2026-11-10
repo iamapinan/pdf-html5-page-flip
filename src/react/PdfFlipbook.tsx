@@ -39,16 +39,22 @@ import { PdfFlipbookProps } from './types';
 
 // Ensure PDF.js worker
 if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.mjs',
-    import.meta.url
-  ).toString();
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.mjs',
+      import.meta.url
+    ).toString();
+  } catch {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.mjs';
+  }
 }
 
 export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   src,
   theme = 'dark',
   mode = 'auto',
+  accentColor = '#6366f1',
+  showLogo = true,
   showToolbar = true,
   showSidebar = true,
   showNavigation = true,
@@ -65,18 +71,20 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   showViewToggle = true,
   showFileUpload = true,
   showUrlInput = true,
-  flippingTime = 600,
+  flippingTime = 800,
   className = '',
   height = '100%',
   width = '100%',
   onPageChange,
-  onDocumentLoad
+  onDocumentLoad,
+  onFileSelect
 }) => {
   // State
   const [currentTheme, setCurrentTheme] = useState<'dark' | 'light' | 'wood'>(theme);
   const [activeTab, setActiveTab] = useState<'outline' | 'search' | 'bookmarks' | 'thumbs'>('outline');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageInputVal, setPageInputVal] = useState('1');
   const [totalPages, setTotalPages] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [isMuted, setIsMuted] = useState(soundManager.getMuted());
@@ -101,13 +109,36 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
-  const bookContainerRef = useRef<HTMLDivElement>(null);
+  const mountWrapperRef = useRef<HTMLElement>(null);
+  const bookContainerRef = useRef<HTMLDivElement | null>(null);
+  const renderingPagesRef = useRef<Set<number>>(new Set());
+  const activeRenderTasksRef = useRef<Map<number, any>>(new Map());
   const pageFlipRef = useRef<PageFlip | null>(null);
   const pdfDocRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
   const searchIndexRef = useRef<Array<{ page: number; text: string }>>([]);
   const renderedPagesRef = useRef<Set<number>>(new Set());
   const baseDimRef = useRef<{ width: number; height: number }>({ width: 595, height: 842 });
   const docIdRef = useRef<string>('doc');
+  const objectUrlRef = useRef<string | null>(null);
+
+  const isPdfFile = (file: File) => {
+    if (!file) return false;
+    return file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf') || !file.type;
+  };
+
+  // Component unmount cleanup
+  useEffect(() => {
+    return () => {
+      if (pageFlipRef.current) {
+        try { pageFlipRef.current.destroy(); } catch {}
+        pageFlipRef.current = null;
+      }
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   // Trigger lazy rendering
   const triggerLazyRender = useCallback(async (current: number, total: number) => {
@@ -118,10 +149,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     const maxPage = Math.min(total, current + windowSize + (isDoublePage ? 1 : 0));
 
     for (let p = minPage; p <= maxPage; p++) {
-      if (!renderedPagesRef.current.has(p)) {
-        const pageEl = bookContainerRef.current.querySelector(`.page[data-page-number="${p}"]`);
+      if (!renderedPagesRef.current.has(p) && !renderingPagesRef.current.has(p)) {
+        const pageEl = bookContainerRef.current?.querySelector(`.page[data-page-number="${p}"]`);
         const canvas = pageEl?.querySelector('canvas') as HTMLCanvasElement;
         if (canvas && pageEl) {
+          renderingPagesRef.current.add(p);
           try {
             const page = await doc.getPage(p);
             const dpr = window.devicePixelRatio || 1;
@@ -138,11 +170,22 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
             const ctx = canvas.getContext('2d');
             if (ctx) {
-              await page.render({ canvasContext: ctx, viewport: vp }).promise;
+              if (activeRenderTasksRef.current.has(p)) {
+                try { activeRenderTasksRef.current.get(p)?.cancel(); } catch {}
+                activeRenderTasksRef.current.delete(p);
+              }
+              const renderTask = page.render({ canvasContext: ctx, viewport: vp });
+              activeRenderTasksRef.current.set(p, renderTask);
+              await renderTask.promise;
               renderedPagesRef.current.add(p);
             }
-          } catch (e) {
-            console.warn(`Render error page ${p}:`, e);
+          } catch (e: any) {
+            if (e?.name !== 'RenderingCancelledException') {
+              console.warn(`Render error page ${p}:`, e);
+            }
+          } finally {
+            renderingPagesRef.current.delete(p);
+            activeRenderTasksRef.current.delete(p);
           }
         }
       }
@@ -167,14 +210,26 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
   // Initialize PageFlip instance
   const initFlipInstance = useCallback(async () => {
-    if (!bookContainerRef.current || !pdfDocRef.current || totalPages === 0) return;
+    if (!mountWrapperRef.current || !pdfDocRef.current || totalPages === 0) return;
 
     if (pageFlipRef.current) {
-      pageFlipRef.current.destroy();
+      try {
+        pageFlipRef.current.destroy();
+      } catch (e) {
+        console.warn('Destroy error', e);
+      }
       pageFlipRef.current = null;
     }
 
-    bookContainerRef.current.innerHTML = '';
+    // Ensure a fresh flipbook container exists inside stage
+    let container = mountWrapperRef.current.querySelector<HTMLDivElement>('.flipbook-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'flipbook-container';
+      mountWrapperRef.current.appendChild(container);
+    }
+    bookContainerRef.current = container;
+    container.innerHTML = '';
     renderedPagesRef.current.clear();
 
     for (let i = 1; i <= totalPages; i++) {
@@ -187,12 +242,12 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       canvas.dataset.pageNumber = String(i);
       pageEl.appendChild(canvas);
 
-      bookContainerRef.current.appendChild(pageEl);
+      container.appendChild(pageEl);
     }
 
-    const stage = bookContainerRef.current.parentElement;
-    const availH = Math.max(380, (stage?.clientHeight || 600) - 40);
-    const availW = Math.max(300, (stage?.clientWidth || 800) - 40);
+    const stage = mountWrapperRef.current;
+    const availH = Math.max(360, (stage.clientHeight || 640) - 40);
+    const availW = Math.max(300, (stage.clientWidth || 800) - 40);
 
     let bH = availH;
     let bW = Math.round((bH * baseDimRef.current.width) / baseDimRef.current.height);
@@ -205,36 +260,43 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       bH = Math.round((bW * baseDimRef.current.height) / baseDimRef.current.width);
     }
 
-    bW = Math.round(bW * zoomLevel);
-    bH = Math.round(bH * zoomLevel);
+    bW = Math.max(200, Math.round(bW * zoomLevel));
+    bH = Math.max(280, Math.round(bH * zoomLevel));
 
-    const pf = new PageFlip(bookContainerRef.current, {
-      width: bW,
-      height: bH,
-      size: 'fixed',
-      minWidth: 200,
-      maxWidth: 1800,
-      minHeight: 300,
-      maxHeight: 2200,
-      maxShadowOpacity: 0.5,
-      showCover: true,
-      usePortrait: !isDoublePage,
-      flippingTime: flippingTime
-    });
+    try {
+      const pf = new PageFlip(container, {
+        width: bW,
+        height: bH,
+        size: 'fixed',
+        minWidth: 200,
+        maxWidth: 2400,
+        minHeight: 300,
+        maxHeight: 2800,
+        maxShadowOpacity: 0.38,
+        swipeDistance: 25,
+        drawShadow: true,
+        showCover: true,
+        usePortrait: !isDoublePage,
+        flippingTime: flippingTime
+      });
 
-    const pageElements = bookContainerRef.current.querySelectorAll<HTMLElement>('.page');
-    pf.loadFromHTML(pageElements);
+      const pageElements = container.querySelectorAll<HTMLElement>('.page');
+      pf.loadFromHTML(pageElements);
 
-    pf.on('flip', (e: any) => {
-      const p = (e.data as number) + 1;
-      setCurrentPage(p);
-      if (showSound) soundManager.playPageFlip();
-      triggerLazyRender(p, totalPages);
-      onPageChange?.(p, totalPages);
-    });
+      pf.on('flip', (e: any) => {
+        const p = (e.data as number) + 1;
+        setCurrentPage(p);
+        setPageInputVal(String(p));
+        if (showSound) soundManager.playPageFlip();
+        triggerLazyRender(p, totalPages);
+        onPageChange?.(p, totalPages);
+      });
 
-    pageFlipRef.current = pf;
-    await triggerLazyRender(currentPage, totalPages);
+      pageFlipRef.current = pf;
+      await triggerLazyRender(currentPage, totalPages);
+    } catch (err) {
+      console.error('Failed to init PageFlip instance:', err);
+    }
   }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, currentPage, triggerLazyRender, onPageChange]);
 
   // Load PDF Document with Remote CORS Fallback
@@ -244,17 +306,23 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     setLoadingText('Connecting to PDF source...');
 
     try {
-      let data: any = source;
-      if (source instanceof File) {
-        data = await source.arrayBuffer();
-        docIdRef.current = `${source.name}-${source.size}`;
+      let getDocParam: any;
+      if (source instanceof File || source instanceof Blob) {
+        setLoadingText(`Reading ${(source as File).name || 'local document'}...`);
+        const buf = await source.arrayBuffer();
+        getDocParam = { data: new Uint8Array(buf) };
+        docIdRef.current = `${(source as File).name || 'uploaded'}-${source.size}`;
+      } else if (source instanceof ArrayBuffer) {
+        getDocParam = { data: new Uint8Array(source) };
+        docIdRef.current = `buf-${Date.now()}`;
       } else if (typeof source === 'string') {
+        getDocParam = { url: source };
         docIdRef.current = source.split('/').pop()?.split('?')[0] || 'doc';
         if (/^https?:\/\//i.test(source)) {
           setLoadingText(`Fetching remote PDF: ${source.substring(0, 45)}...`);
         }
       } else {
-        docIdRef.current = `doc-${Date.now()}`;
+        getDocParam = source;
       }
 
       // Load saved bookmarks for document
@@ -267,7 +335,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
       let doc: pdfjsLib.PDFDocumentProxy;
       try {
-        const task = pdfjsLib.getDocument(data);
+        const task = pdfjsLib.getDocument(getDocParam);
         task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
           if (total > 0) {
             setLoadingProgress(Math.round((loaded / total) * 50) + 25);
@@ -338,6 +406,25 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       initFlipInstance();
     }
   }, [isLoading, totalPages, isDoublePage, zoomLevel, initFlipInstance]);
+
+  // Debounced window resize handler
+  useEffect(() => {
+    let timeout: any;
+    const handleResize = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (!isLoading && totalPages > 0) {
+          initFlipInstance();
+        }
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isLoading, totalPages, initFlipInstance]);
 
   // Navigation handlers
   const handleTurnToPage = (p: number) => {
@@ -440,8 +527,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 ${themeClass} ${className}`}
-      style={{ height, width }}
+      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
+      style={{ height, width, ['--flip-accent' as any]: accentColor }}
     >
       {/* Top Glassmorphism Toolbar */}
       {showToolbar && (
@@ -457,12 +544,14 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               </button>
             )}
 
-            <div className="flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
-              <BookOpen className="w-5 h-5 text-indigo-400" />
-              <span className="font-semibold text-sm md:text-base tracking-tight hidden sm:inline text-white">
-                Page Flip <span className="text-indigo-400 font-bold">Pro</span>
-              </span>
-            </div>
+            {showLogo && (
+              <div className="flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
+                <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
+                <span className="font-semibold text-sm md:text-base tracking-tight hidden sm:inline text-white">
+                  Page Flip <span className="font-bold" style={{ color: accentColor }}>Pro</span>
+                </span>
+              </div>
+            )}
 
             {showFileUpload && (
               <>
@@ -481,7 +570,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   className="hidden"
                   onChange={e => {
                     const f = e.target.files?.[0];
-                    if (f) loadPdfDocument(f);
+                    if (f && isPdfFile(f)) {
+                      loadPdfDocument(f);
+                      onFileSelect?.(f);
+                    }
+                    e.target.value = '';
                   }}
                 />
               </>
@@ -522,9 +615,21 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   type="number"
                   min={1}
                   max={totalPages}
-                  value={currentPage}
-                  onChange={e => handleTurnToPage(Number(e.target.value))}
-                  className="w-10 text-center bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded text-white"
+                  value={pageInputVal}
+                  onChange={e => setPageInputVal(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const p = parseInt(pageInputVal, 10);
+                      if (!isNaN(p) && p >= 1 && p <= totalPages) handleTurnToPage(p);
+                    }
+                  }}
+                  onBlur={() => {
+                    const p = parseInt(pageInputVal, 10);
+                    if (!isNaN(p) && p >= 1 && p <= totalPages) handleTurnToPage(p);
+                    else setPageInputVal(String(currentPage));
+                  }}
+                  aria-label="Current page number"
+                  className="w-10 text-center bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded text-white font-medium"
                 />
                 <span className="text-slate-400">/</span>
                 <span className="text-slate-300 min-w-[20px] text-center">{totalPages || '-'}</span>
@@ -656,7 +761,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       )}
 
       {/* Main Section */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative h-full min-h-0">
         {/* Collapsible Sidebar */}
         {showSidebar && (
           <aside
@@ -850,17 +955,21 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         {/* Central Flipbook Stage */}
         <main
           id="stage"
-          className="flex-1 relative flex items-center justify-center p-2 sm:p-6 overflow-hidden"
+          ref={mountWrapperRef}
+          className="flex-1 relative flex items-center justify-center p-2 sm:p-6 overflow-hidden h-full min-h-0 w-full"
           onDragOver={e => e.preventDefault()}
           onDrop={e => {
             e.preventDefault();
             const f = e.dataTransfer.files?.[0];
-            if (f && f.type === 'application/pdf') loadPdfDocument(f);
+            if (f && isPdfFile(f)) {
+              loadPdfDocument(f);
+              onFileSelect?.(f);
+            }
           }}
         >
           {isLoading && (
             <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-40 flex flex-col items-center justify-center p-4 text-center">
-              <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4" />
+              <div className="w-12 h-12 border-4 border-white/20 rounded-full animate-spin mb-4" />
               <h4 className="text-sm font-medium text-slate-200 tracking-wide max-w-sm truncate">{loadingText}</h4>
               <div className="w-48 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-indigo-500 transition-all duration-200" style={{ width: `${loadingProgress}%` }} />
