@@ -1,0 +1,16 @@
+services:
+  pdf-html5-page-flip:
+    image: nginx:1.27-bookworm
+    container_name: pdf-html5-page-flip
+    restart: unless-stopped
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - gracer-edge
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  gracer-edge:
+    external: true
