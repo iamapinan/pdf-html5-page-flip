@@ -1,4 +1,4 @@
-# PDF HTML5 Page Flip Pro (`pdf-html5-page-flip`)
+# PDF HTML5 Page Flip Pro (`@iamapinan/pdf-html5-page-flip`)
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -30,16 +30,24 @@ Live Production Website: [https://flipbook.apps.gracer.ai](https://flipbook.apps
 
 ### 1. Installation
 
+Configure your project `.npmrc` to route the `@iamapinan` scope to GitHub Packages:
+
+```shell
+@iamapinan:registry=https://npm.pkg.github.com
+```
+
+Install the package:
+
 ```bash
-npm install pdf-html5-page-flip
+npm install @iamapinan/pdf-html5-page-flip
 ```
 
 ### 2. Basic Usage
 
 ```tsx
 import React from 'react';
-import { PdfFlipbook } from 'pdf-html5-page-flip/react';
-import 'pdf-html5-page-flip/style.css';
+import { PdfFlipbook } from '@iamapinan/pdf-html5-page-flip/react';
+import '@iamapinan/pdf-html5-page-flip/style.css';
 
 export default function DocumentViewer() {
   return (
@@ -84,7 +92,7 @@ export default function DocumentViewer() {
 | `showViewToggle` | `boolean` | `true` | Enable single/double page switcher button |
 | `showFileUpload` | `boolean` | `true` | Enable local PDF picker button |
 | `showUrlInput` | `boolean` | `true` | Enable remote URL input modal button |
-| `flippingTime` | `number` | `600` | Duration of flip animation in milliseconds |
+| `flippingTime` | `number` | `800` | Duration of flip animation in milliseconds |
 | `onPageChange` | `(page, total) => void` | `undefined` | Callback fired when current page changes |
 | `onDocumentLoad`| `(pdfDoc) => void` | `undefined` | Callback fired when PDFDocumentProxy is resolved |
 | `onFileSelect` | `(file: File) => void` | `undefined` | Callback fired when a local file is opened inside viewer |

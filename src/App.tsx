@@ -160,8 +160,8 @@ export function App() {
       !config.showUrlInput ? `  showUrlInput={false}` : null,
     ].filter(Boolean).join('\n');
 
-    return `import { PdfFlipbook } from 'pdf-html5-page-flip/react';
-import 'pdf-html5-page-flip/style.css';
+    return `import { PdfFlipbook } from '@iamapinan/pdf-html5-page-flip/react';
+import '@iamapinan/pdf-html5-page-flip/style.css';
 
 export default function MyViewer() {
   return (
