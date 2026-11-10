@@ -26,7 +26,7 @@ export function App() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
 
-  // Configurator Drawer Overlay (Hidden by default as requested)
+  // Configurator Drawer Overlay (Hidden by default)
   const [showConfigDrawer, setShowConfigDrawer] = useState(false);
 
   // Hero Tab: 'upload' | 'url'
@@ -37,6 +37,9 @@ export function App() {
   const [config, setConfig] = useState({
     theme: 'dark' as 'dark' | 'light' | 'wood',
     mode: 'auto' as 'auto' | 'single' | 'double',
+    stageHeight: 'medium' as 'compact' | 'medium' | 'large' | 'viewport',
+    accentColor: '#6366f1',
+    showLogo: true,
     showToolbar: true,
     showSidebar: true,
     showNavigation: true,
@@ -117,11 +120,30 @@ export function App() {
     setTimeout(() => setCopiedShareLink(false), 2000);
   };
 
+  const stageHeightClasses = {
+    compact: 'min-h-[580px] h-[580px]',
+    medium: 'min-h-[720px] h-[720px]',
+    large: 'min-h-[860px] h-[860px]',
+    viewport: 'min-h-[calc(100vh-100px)] h-[calc(100vh-100px)]'
+  };
+
+  const accentPresets = [
+    { name: 'Indigo', hex: '#6366f1' },
+    { name: 'Emerald', hex: '#10b981' },
+    { name: 'Amber', hex: '#f59e0b' },
+    { name: 'Rose', hex: '#f43f5e' },
+    { name: 'Cyan', hex: '#06b6d4' },
+    { name: 'Purple', hex: '#a855f7' },
+    { name: 'Monochrome', hex: '#f8fafc' },
+  ];
+
   const generateReactCode = () => {
     const propLines = [
       `  src="${typeof pdfSource === 'string' ? pdfSource : fileName}"`,
       config.theme !== 'dark' ? `  theme="${config.theme}"` : null,
       config.mode !== 'auto' ? `  mode="${config.mode}"` : null,
+      config.accentColor !== '#6366f1' ? `  accentColor="${config.accentColor}"` : null,
+      !config.showLogo ? `  showLogo={false}` : null,
       !config.showToolbar ? `  showToolbar={false}` : null,
       !config.showSidebar ? `  showSidebar={false}` : null,
       !config.showSearch ? `  showSearch={false}` : null,
@@ -131,10 +153,13 @@ export function App() {
       !config.showSound ? `  showSound={false}` : null,
       !config.showZoom ? `  showZoom={false}` : null,
       !config.showPrint ? `  showPrint={false}` : null,
+      !config.showThemeToggle ? `  showThemeToggle={false}` : null,
+      !config.showViewToggle ? `  showViewToggle={false}` : null,
       !config.showUrlInput ? `  showUrlInput={false}` : null,
     ].filter(Boolean).join('\n');
 
     return `import { PdfFlipbook } from 'pdf-html5-page-flip/react';
+import 'pdf-html5-page-flip/style.css';
 
 export default function MyViewer() {
   return (
@@ -171,11 +196,14 @@ ${propLines}
       {/* Top Navigation Bar */}
       <nav className="h-16 border-b border-white/10 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-md transition-colors"
+            style={{ backgroundColor: config.accentColor }}
+          >
             <BookOpen className="w-4 h-4" />
           </div>
           <span className="font-semibold text-base tracking-tight text-white">
-            Page Flip <span className="text-indigo-400">Pro</span>
+            Page Flip <span style={{ color: config.accentColor }}>Pro</span>
           </span>
         </div>
 
@@ -185,7 +213,7 @@ ${propLines}
             onClick={() => setShowConfigDrawer(true)}
             className="hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer text-left"
           >
-            <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+            <Sliders className="w-3.5 h-3.5" style={{ color: config.accentColor }} />
             <span>Configurator</span>
           </button>
           <a href="#code" className="hover:text-white transition-colors">React API</a>
@@ -204,7 +232,8 @@ ${propLines}
           </a>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold text-white transition-all shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-1.5 text-white rounded-lg text-xs font-semibold transition-all shadow-md cursor-pointer"
+            style={{ backgroundColor: config.accentColor }}
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Upload PDF</span>
@@ -215,13 +244,13 @@ ${propLines}
       {/* Hero Section */}
       <section className="relative px-6 pt-16 pb-12 lg:pt-20 lg:pb-16 max-w-4xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-slate-300 text-xs font-medium mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+          <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: config.accentColor }} />
           <span>Local Files & Remote URLs • Zero Server Storage</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4 leading-tight">
           Turn Any PDF into a Realistic <br />
-          <span className="text-indigo-400">3D HTML5 Flipbook</span>
+          <span style={{ color: config.accentColor }}>3D HTML5 Flipbook</span>
         </h1>
 
         <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed">
@@ -235,10 +264,11 @@ ${propLines}
             <button
               onClick={() => setInputMode('upload')}
               className={`flex items-center gap-2 pb-2 -mb-3.5 border-b-2 transition-all cursor-pointer ${
-                inputMode === 'upload' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200'
+                inputMode === 'upload' ? 'text-white font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
+              style={{ borderColor: inputMode === 'upload' ? config.accentColor : 'transparent' }}
             >
-              <Upload className="w-4 h-4 text-indigo-400" />
+              <Upload className="w-4 h-4" style={{ color: config.accentColor }} />
               <span>Upload Local PDF</span>
             </button>
             <button
@@ -262,13 +292,16 @@ ${propLines}
                 if (f) handleFileUpload(f);
               }}
               onClick={() => fileInputRef.current?.click()}
-              className="border border-dashed border-indigo-500/40 bg-indigo-950/20 hover:bg-indigo-950/30 p-6 rounded-lg transition-all text-center cursor-pointer group"
+              className="border border-dashed border-white/20 bg-white/5 hover:bg-white/10 p-6 rounded-lg transition-all text-center cursor-pointer group"
             >
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-lg flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:scale-105 transition-transform">
+              <div
+                className="w-10 h-10 border border-white/15 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform"
+                style={{ color: config.accentColor }}
+              >
                 <Upload className="w-5 h-5" />
               </div>
               <h3 className="text-xs font-semibold text-white mb-1">
-                Drop your PDF file here, or <span className="text-indigo-400 underline decoration-indigo-400/40">browse files</span>
+                Drop your PDF file here, or <span className="underline decoration-white/40" style={{ color: config.accentColor }}>browse files</span>
               </h3>
               <p className="text-[11px] text-slate-400">
                 100% Client-Side • Your document never leaves your machine
@@ -320,13 +353,13 @@ ${propLines}
         </div>
       </section>
 
-      {/* Live Studio (Spans full width for immersive reading) */}
+      {/* Live Studio (Configurable Display Area Height) */}
       <section id="studio" className="px-4 sm:px-8 lg:px-12 pb-20 max-w-[1440px] mx-auto">
-        <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[640px] lg:min-h-[760px] w-full">
+        <div className={`bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col ${stageHeightClasses[config.stageHeight]} w-full transition-all duration-300`}>
           {/* Viewer Top Action Bar */}
-          <div className="h-11 px-4 bg-black/40 border-b border-white/10 flex items-center justify-between text-xs text-slate-400">
+          <div className="h-11 px-4 bg-black/40 border-b border-white/10 flex items-center justify-between text-xs text-slate-400 shrink-0">
             <div className="flex items-center gap-2 truncate">
-              <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+              <FileText className="w-4 h-4 shrink-0" style={{ color: config.accentColor }} />
               <span className="text-slate-200 font-medium truncate max-w-xs">{fileName}</span>
             </div>
 
@@ -336,14 +369,15 @@ ${propLines}
                 title="Share Direct Flipbook Link"
                 className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-slate-200 cursor-pointer transition-colors"
               >
-                {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5 text-indigo-400" />}
+                {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" style={{ color: config.accentColor }} />}
                 <span className="hidden sm:inline">{copiedShareLink ? 'Link Copied!' : 'Share Link'}</span>
               </button>
 
               {/* Props Configurator Overlay Trigger */}
               <button
                 onClick={() => setShowConfigDrawer(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-medium cursor-pointer transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1 text-white rounded font-medium cursor-pointer transition-colors shadow-sm"
+                style={{ backgroundColor: config.accentColor }}
               >
                 <Sliders className="w-3.5 h-3.5" />
                 <span>Configure Props</span>
@@ -351,13 +385,15 @@ ${propLines}
             </div>
           </div>
 
-          {/* Embedded React Component with Key for Clean Remounting */}
-          <div className="flex-1 relative">
+          {/* Embedded React Component with 100% Height & Min-H-0 */}
+          <div className="flex-1 min-h-0 h-full relative">
             <PdfFlipbook
               key={flipbookKey}
               src={pdfSource}
               theme={config.theme}
               mode={config.mode}
+              accentColor={config.accentColor}
+              showLogo={config.showLogo}
               showToolbar={config.showToolbar}
               showSidebar={config.showSidebar}
               showNavigation={config.showNavigation}
@@ -403,11 +439,14 @@ ${propLines}
           >
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
               <div className="flex items-center gap-2.5">
-                <Sliders className="w-4 h-4 text-indigo-400" />
+                <Sliders className="w-4 h-4" style={{ color: config.accentColor }} />
                 <h2 className="font-semibold text-white text-sm">Props Configurator</h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 text-[10px] font-mono border border-indigo-500/20">
+                <span
+                  className="px-2 py-0.5 rounded-full text-[10px] font-mono border"
+                  style={{ color: config.accentColor, borderColor: `${config.accentColor}40`, backgroundColor: `${config.accentColor}15` }}
+                >
                   Live Sync
                 </span>
                 <button
@@ -417,6 +456,52 @@ ${propLines}
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+            </div>
+
+            {/* Display Area Height */}
+            <div className="mb-5 border-b border-white/10 pb-5">
+              <label className="block text-slate-400 text-[11px] font-medium mb-1.5">Display Area Height</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { key: 'compact', label: 'Compact (580px)' },
+                  { key: 'medium', label: 'Medium (720px)' },
+                  { key: 'large', label: 'Large (860px)' },
+                  { key: 'viewport', label: 'Full Viewport' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setConfig(c => ({ ...c, stageHeight: key as any }))}
+                    className={`py-1.5 px-2 rounded font-medium cursor-pointer transition-colors text-center ${
+                      config.stageHeight === key ? 'text-white' : 'bg-black/30 text-slate-400 hover:text-white'
+                    }`}
+                    style={{ backgroundColor: config.stageHeight === key ? config.accentColor : undefined }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Coloring & Accent Swatches */}
+            <div className="mb-5 border-b border-white/10 pb-5">
+              <label className="block text-slate-400 text-[11px] font-medium mb-2">Accent Color</label>
+              <div className="flex items-center gap-2 flex-wrap">
+                {accentPresets.map(({ name, hex }) => (
+                  <button
+                    key={hex}
+                    onClick={() => setConfig(c => ({ ...c, accentColor: hex }))}
+                    title={name}
+                    className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 flex items-center justify-center ${
+                      config.accentColor === hex ? 'border-white scale-110 shadow-md' : 'border-transparent'
+                    }`}
+                    style={{ backgroundColor: hex }}
+                  >
+                    {config.accentColor === hex && (
+                      <Check className={`w-3.5 h-3.5 ${hex === '#f8fafc' ? 'text-slate-900' : 'text-white'}`} />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -430,8 +515,9 @@ ${propLines}
                       key={t}
                       onClick={() => setConfig(c => ({ ...c, theme: t }))}
                       className={`py-1.5 rounded capitalize font-medium cursor-pointer transition-colors ${
-                        config.theme === t ? 'bg-indigo-600 text-white' : 'bg-black/30 text-slate-400 hover:text-white'
+                        config.theme === t ? 'text-white' : 'bg-black/30 text-slate-400 hover:text-white'
                       }`}
+                      style={{ backgroundColor: config.theme === t ? config.accentColor : undefined }}
                     >
                       {t}
                     </button>
@@ -447,8 +533,9 @@ ${propLines}
                       key={m}
                       onClick={() => setConfig(c => ({ ...c, mode: m }))}
                       className={`py-1.5 rounded capitalize font-medium cursor-pointer transition-colors ${
-                        config.mode === m ? 'bg-indigo-600 text-white' : 'bg-black/30 text-slate-400 hover:text-white'
+                        config.mode === m ? 'text-white' : 'bg-black/30 text-slate-400 hover:text-white'
                       }`}
+                      style={{ backgroundColor: config.mode === m ? config.accentColor : undefined }}
                     >
                       {m}
                     </button>
@@ -457,19 +544,25 @@ ${propLines}
               </div>
             </div>
 
-            {/* Feature Toggles */}
+            {/* Feature & Toolbar Toggles (100% Functional) */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 mb-5">
-              <span className="block text-[11px] font-semibold text-slate-400 mb-1">Feature Toggles</span>
+              <span className="block text-[11px] font-semibold text-slate-400 mb-1">Toolbar & Feature Toggles</span>
               {[
                 { key: 'showToolbar', label: 'Top Toolbar' },
+                { key: 'showLogo', label: 'Brand Logo in Toolbar' },
                 { key: 'showSidebar', label: 'Collapsible Sidebar' },
+                { key: 'showNavigation', label: 'Page Turn Controls' },
                 { key: 'showSearch', label: 'Full-Text Search' },
-                { key: 'showAiSummary', label: 'AI Document Assistant' },
+                { key: 'showOutline', label: 'Table of Contents' },
                 { key: 'showBookmarks', label: 'Bookmark Manager' },
                 { key: 'showThumbnails', label: 'Miniature Thumbnails' },
+                { key: 'showAiSummary', label: 'AI Document Assistant' },
                 { key: 'showSound', label: 'Paper Audio Synthesis' },
-                { key: 'showZoom', label: 'Zoom & Pan Controls' },
+                { key: 'showZoom', label: 'Zoom & Fit Controls' },
+                { key: 'showViewToggle', label: '1-Page / 2-Page Mode' },
                 { key: 'showPrint', label: 'Export / Print Button' },
+                { key: 'showThemeToggle', label: 'Theme Switcher' },
+                { key: 'showFullscreen', label: 'Fullscreen Toggle' },
                 { key: 'showFileUpload', label: 'Local File Upload' },
                 { key: 'showUrlInput', label: 'Remote URL Input' },
               ].map(({ key, label }) => (
@@ -482,7 +575,8 @@ ${propLines}
                     type="checkbox"
                     checked={(config as any)[key]}
                     onChange={e => setConfig(c => ({ ...c, [key]: e.target.checked }))}
-                    className="rounded border-white/20 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    className="rounded border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    style={{ accentColor: config.accentColor }}
                   />
                 </label>
               ))}
@@ -502,7 +596,8 @@ ${propLines}
               </button>
               <button
                 onClick={() => setShowConfigDrawer(false)}
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors font-semibold text-center cursor-pointer"
+                className="w-full py-2 text-white rounded-lg transition-colors font-semibold text-center cursor-pointer"
+                style={{ backgroundColor: config.accentColor }}
               >
                 Close Drawer
               </button>
@@ -515,7 +610,8 @@ ${propLines}
       <button
         onClick={() => setShowConfigDrawer(true)}
         title="Open Props Configurator"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg text-xs font-semibold transition-all hover:scale-105 cursor-pointer border border-white/15"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 text-white rounded-full shadow-lg text-xs font-semibold transition-all hover:scale-105 cursor-pointer border border-white/15"
+        style={{ backgroundColor: config.accentColor }}
       >
         <Sliders className="w-4 h-4" />
         <span>Configure Props</span>
@@ -526,7 +622,7 @@ ${propLines}
         <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
           <div className="px-5 py-3.5 bg-black/40 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-indigo-400" />
+              <Code2 className="w-4 h-4" style={{ color: config.accentColor }} />
               <span className="text-xs font-semibold text-white">Generated React Component Code</span>
             </div>
             <button
@@ -541,7 +637,7 @@ ${propLines}
               <span>{copiedCode ? 'Copied to Clipboard' : 'Copy JSX'}</span>
             </button>
           </div>
-          <pre className="p-5 text-xs text-indigo-200 font-mono bg-black/50 overflow-x-auto leading-relaxed select-text">
+          <pre className="p-5 text-xs text-slate-300 font-mono bg-black/50 overflow-x-auto leading-relaxed select-text">
             {generateReactCode()}
           </pre>
         </div>
@@ -561,19 +657,25 @@ ${propLines}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
-                <Globe className="w-5 h-5 text-emerald-400" />
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
+                <Globe className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">Remote PDF & Deep Links</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Open any remote PDF directly via URL input or query parameter (<code className="text-indigo-300 font-mono">?pdf=...</code>) with intelligent CORS fallback.
+                Open any remote PDF directly via URL input or query parameter (<code className="text-slate-300 font-mono">?pdf=...</code>) with intelligent CORS fallback.
               </p>
             </div>
           </div>
 
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
                 <Zap className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">60 FPS Hardware Physics</h3>
@@ -585,7 +687,10 @@ ${propLines}
 
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
                 <Layers className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">Memory Virtualization</h3>
@@ -597,7 +702,10 @@ ${propLines}
 
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
                 <Volume2 className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">Web Audio Synthesizer</h3>
@@ -609,8 +717,11 @@ ${propLines}
 
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
-                <ShieldCheck className="w-5 h-5 text-indigo-400" />
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">100% Client-Side Privacy</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -621,12 +732,15 @@ ${propLines}
 
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
-                <BookOpen className="w-5 h-5 text-indigo-400" />
+              <div
+                className="w-10 h-10 border border-white/15 rounded-xl flex items-center justify-center mb-4"
+                style={{ color: config.accentColor }}
+              >
+                <BookOpen className="w-5 h-5" />
               </div>
               <h3 className="text-base font-semibold text-white mb-2">Embeddable React Component</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Import <code className="text-indigo-300 font-mono">PdfFlipbook</code> into any React 18/19 project with full TypeScript declarations and props configurability.
+                Import <code className="text-slate-300 font-mono">PdfFlipbook</code> into any React 18/19 project with full TypeScript declarations and props configurability.
               </p>
             </div>
           </div>

@@ -3,10 +3,14 @@ import * as pdfjsLib from 'pdfjs-dist';
 export interface PdfFlipbookProps {
   /** PDF source: URL string, File object, or ArrayBuffer */
   src: string | File | ArrayBuffer;
-  /** Background theme */
+  /** Background theme: 'dark' | 'light' | 'wood' */
   theme?: 'dark' | 'light' | 'wood';
-  /** Page presentation mode */
+  /** Page presentation mode: 'auto' (responsive) | 'single' | 'double' */
   mode?: 'auto' | 'single' | 'double';
+  /** Accent highlight color (hex or CSS color, default: #6366f1) */
+  accentColor?: string;
+  /** Show brand logo in toolbar (default: true) */
+  showLogo?: boolean;
   /** Show top glassmorphism toolbar (default: true) */
   showToolbar?: boolean;
   /** Show collapsible left sidebar (default: true) */
