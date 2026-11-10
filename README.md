@@ -16,6 +16,7 @@ A modern, high-performance, client-side 3D Web Application and React Component t
 ## 🌟 Key Highlights & Architecture
 
 * **100% Client-Side Privacy:** All rendering and parsing execute directly in the browser runtime via `pdfjs-dist` Web Workers. Confidential documents never leave the client's machine.
+* **Remote PDF & Query Parameter Support:** Load any public PDF URL directly using the UI or deep links (`?pdf=https://example.com/doc.pdf`) with automated fallback for CORS-protected endpoints.
 * **Lazy Virtualization & Memory Management:** Pre-renders only visible pages and immediate neighbors ($\pm 3$ pages) and unloads distant canvases to ensure zero browser memory leaks on multi-hundred-page documents.
 * **60 FPS Hardware-Accelerated Physics:** Powered by StPageFlip with CSS3 3D transforms, dual-page realistic spine lighting, and natural corner curl ergonomics.
 * **Synthesized Page-Turn Audio:** Generates paper friction acoustics on-the-fly using the Web Audio API with zero external `.mp3` bandwidth or asset dependencies.

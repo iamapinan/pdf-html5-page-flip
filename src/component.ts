@@ -38,10 +38,21 @@ export class PdfFlipbookElement extends HTMLElement {
     }
   }
 
-  public async loadPdf(src: string | ArrayBuffer) {
+  public async loadPdf(src: string | ArrayBuffer, isRetry = false): Promise<void> {
     try {
       this.container.innerHTML = '<div class="flex items-center justify-center p-8 text-sm text-slate-400">Loading Flipbook...</div>';
-      const doc = await pdfjsLib.getDocument(src).promise;
+      
+      let doc: pdfjsLib.PDFDocumentProxy;
+      try {
+        doc = await pdfjsLib.getDocument(src).promise;
+      } catch (err) {
+        if (typeof src === 'string' && /^https?:\/\//i.test(src) && !isRetry) {
+          const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(src)}`;
+          return await this.loadPdf(proxyUrl, true);
+        }
+        throw err;
+      }
+
       this.pdfDoc = doc;
       this.container.innerHTML = '';
 

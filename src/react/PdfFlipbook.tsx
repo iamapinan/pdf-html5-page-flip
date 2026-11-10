@@ -5,6 +5,7 @@ import {
   PanelLeft,
   BookOpen,
   Upload,
+  Globe,
   ChevronsLeft,
   ChevronLeft,
   ChevronRight,
@@ -30,7 +31,8 @@ import {
   FileText,
   Copy,
   RefreshCw,
-  Check
+  Check,
+  Link as LinkIcon
 } from 'lucide-react';
 import { soundManager } from '../sound';
 import { PdfFlipbookProps } from './types';
@@ -62,6 +64,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   showThemeToggle = true,
   showViewToggle = true,
   showFileUpload = true,
+  showUrlInput = true,
   flippingTime = 600,
   className = '',
   height = '100%',
@@ -91,6 +94,10 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   const [searchResults, setSearchResults] = useState<Array<{ page: number; snippet: string }>>([]);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [outlineItems, setOutlineItems] = useState<any[]>([]);
+
+  // Remote URL Modal State
+  const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
+  const [remoteUrlInput, setRemoteUrlInput] = useState('');
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -230,11 +237,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     await triggerLazyRender(currentPage, totalPages);
   }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, currentPage, triggerLazyRender, onPageChange]);
 
-  // Load PDF Document
-  const loadPdfDocument = useCallback(async (source: string | File | ArrayBuffer) => {
+  // Load PDF Document with Remote CORS Fallback
+  const loadPdfDocument = useCallback(async (source: string | File | ArrayBuffer, isRetry = false) => {
     setIsLoading(true);
-    setLoadingProgress(25);
-    setLoadingText('Parsing PDF file...');
+    setLoadingProgress(20);
+    setLoadingText('Connecting to PDF source...');
 
     try {
       let data: any = source;
@@ -242,7 +249,10 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         data = await source.arrayBuffer();
         docIdRef.current = `${source.name}-${source.size}`;
       } else if (typeof source === 'string') {
-        docIdRef.current = source.split('/').pop() || 'doc';
+        docIdRef.current = source.split('/').pop()?.split('?')[0] || 'doc';
+        if (/^https?:\/\//i.test(source)) {
+          setLoadingText(`Fetching remote PDF: ${source.substring(0, 45)}...`);
+        }
       } else {
         docIdRef.current = `doc-${Date.now()}`;
       }
@@ -255,14 +265,26 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         setBookmarks([]);
       }
 
-      const task = pdfjsLib.getDocument(data);
-      task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
-        if (total > 0) {
-          setLoadingProgress(Math.round((loaded / total) * 50) + 25);
+      let doc: pdfjsLib.PDFDocumentProxy;
+      try {
+        const task = pdfjsLib.getDocument(data);
+        task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
+          if (total > 0) {
+            setLoadingProgress(Math.round((loaded / total) * 50) + 25);
+          }
+        };
+        doc = await task.promise;
+      } catch (err: any) {
+        // If direct fetch of remote URL failed and not already retrying, attempt with CORS proxy fallback
+        if (typeof source === 'string' && /^https?:\/\//i.test(source) && !isRetry) {
+          console.warn('Direct remote PDF load failed, trying CORS proxy fallback...', err);
+          setLoadingText('Bypassing CORS restrictions via fallback proxy...');
+          const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(source)}`;
+          return await loadPdfDocument(proxyUrl, true);
         }
-      };
+        throw err;
+      }
 
-      const doc = await task.promise;
       pdfDocRef.current = doc;
       setTotalPages(doc.numPages);
       setCurrentPage(1);
@@ -272,7 +294,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       baseDimRef.current = { width: Math.round(vp.width), height: Math.round(vp.height) };
 
       onDocumentLoad?.(doc);
-      setLoadingProgress(90);
+      setLoadingProgress(95);
 
       // Async index text for search
       if (showSearch) {
@@ -299,7 +321,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       setIsLoading(false);
     } catch (err) {
       console.error('Error loading PDF in React component:', err);
-      setLoadingText('Failed to load PDF file.');
+      setLoadingText('Failed to load PDF. Check the URL or file permissions.');
     }
   }, [onDocumentLoad, showSearch, showOutline]);
 
@@ -402,6 +424,16 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
   };
 
+  const handleLoadRemoteUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanUrl = remoteUrlInput.trim();
+    if (cleanUrl) {
+      loadPdfDocument(cleanUrl);
+      setIsUrlModalOpen(false);
+      setRemoteUrlInput('');
+    }
+  };
+
   const themeClass = currentTheme === 'light' ? 'theme-light' : currentTheme === 'wood' ? 'theme-wood' : 'theme-dark';
   const isBookmarked = bookmarks.includes(currentPage);
 
@@ -453,6 +485,17 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   }}
                 />
               </>
+            )}
+
+            {showUrlInput && (
+              <button
+                onClick={() => setIsUrlModalOpen(true)}
+                title="Open Remote PDF from URL"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 hover:bg-white/15 text-xs font-medium rounded-md transition-colors cursor-pointer text-slate-200 hover:text-white border border-white/10"
+              >
+                <Globe className="w-4 h-4 text-emerald-300" />
+                <span className="hidden md:inline">Open URL</span>
+              </button>
             )}
           </div>
 
@@ -816,9 +859,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           }}
         >
           {isLoading && (
-            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-40 flex flex-col items-center justify-center">
+            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-40 flex flex-col items-center justify-center p-4 text-center">
               <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4" />
-              <h4 className="text-sm font-medium text-slate-200 tracking-wide">{loadingText}</h4>
+              <h4 className="text-sm font-medium text-slate-200 tracking-wide max-w-sm truncate">{loadingText}</h4>
               <div className="w-48 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-indigo-500 transition-all duration-200" style={{ width: `${loadingProgress}%` }} />
               </div>
@@ -828,6 +871,62 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           <div ref={bookContainerRef} className="flipbook-container" />
         </main>
       </div>
+
+      {/* Open Remote PDF by URL Modal */}
+      {isUrlModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-white/15 rounded-2xl w-full max-w-lg p-5 shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-sm font-semibold text-white">Open Remote PDF via URL</h3>
+              </div>
+              <button
+                onClick={() => setIsUrlModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-white rounded"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLoadRemoteUrl} className="space-y-4">
+              <div>
+                <label className="block text-slate-400 text-xs mb-1.5">Public PDF Web Address (URL)</label>
+                <div className="relative">
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://example.com/document.pdf"
+                    value={remoteUrlInput}
+                    onChange={e => setRemoteUrlInput(e.target.value)}
+                    className="w-full bg-black/40 border border-white/20 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400"
+                  />
+                  <LinkIcon className="w-4 h-4 text-slate-500 absolute right-3 top-3" />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5">
+                  Direct links or CORS-protected PDFs are supported via automated fallback.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsUrlModalOpen(false)}
+                  className="px-3.5 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold text-white shadow"
+                >
+                  Load Remote PDF
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* AI Assistant Modal */}
       {isAiModalOpen && (

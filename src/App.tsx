@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   Upload,
+  Globe,
   Sparkles,
   Sliders,
   Code2,
@@ -13,18 +14,23 @@ import {
   ShieldCheck,
   Search,
   ExternalLink,
-  ChevronDown,
-  ArrowRight,
-  FileText
+  FileText,
+  Share2,
+  Link as LinkIcon
 } from 'lucide-react';
 import { PdfFlipbook } from './react/PdfFlipbook';
 
 export function App() {
-  // Uploaded PDF state
+  // Source State: URL or File
   const [pdfSource, setPdfSource] = useState<string | File>('/sample.pdf');
   const [fileName, setFileName] = useState<string>('sample.pdf');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [showConfigDrawer, setShowConfigDrawer] = useState(true);
+
+  // Hero Tab: 'upload' | 'url'
+  const [inputMode, setInputMode] = useState<'upload' | 'url'>('upload');
+  const [remoteUrlInput, setRemoteUrlInput] = useState<string>('');
 
   // Configurable Props State
   const [config, setConfig] = useState({
@@ -45,15 +51,59 @@ export function App() {
     showThemeToggle: true,
     showViewToggle: true,
     showFileUpload: true,
+    showUrlInput: true
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-detect ?pdf= or ?url= or ?src= from query params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlParam = params.get('pdf') || params.get('url') || params.get('src');
+      if (urlParam) {
+        setPdfSource(urlParam);
+        const name = urlParam.split('/').pop()?.split('?')[0] || 'remote-document.pdf';
+        setFileName(decodeURIComponent(name));
+        // Smooth scroll to studio
+        setTimeout(() => {
+          document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' });
+        }, 400);
+      }
+    }
+  }, []);
 
   const handleFileUpload = (file: File) => {
     if (file && file.type === 'application/pdf') {
       setPdfSource(file);
       setFileName(file.name);
+      document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleRemoteUrlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = remoteUrlInput.trim();
+    if (clean) {
+      setPdfSource(clean);
+      const name = clean.split('/').pop()?.split('?')[0] || 'remote-document.pdf';
+      setFileName(decodeURIComponent(name));
+      // Update browser URL query without reload
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('pdf', clean);
+      window.history.pushState({}, '', newUrl.toString());
+      document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    let shareUrl = window.location.origin + window.location.pathname;
+    if (typeof pdfSource === 'string' && /^https?:\/\//i.test(pdfSource)) {
+      shareUrl += `?pdf=${encodeURIComponent(pdfSource)}`;
+    }
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedShareLink(true);
+    setTimeout(() => setCopiedShareLink(false), 2000);
   };
 
   const generateReactCode = () => {
@@ -70,6 +120,7 @@ export function App() {
       !config.showSound ? `  showSound={false}` : null,
       !config.showZoom ? `  showZoom={false}` : null,
       !config.showPrint ? `  showPrint={false}` : null,
+      !config.showUrlInput ? `  showUrlInput={false}` : null,
     ].filter(Boolean).join('\n');
 
     return `import { PdfFlipbook } from 'pdf-html5-page-flip/react';
@@ -121,7 +172,7 @@ ${propLines}
             className="flex items-center gap-2 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold text-white transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>Upload PDF Free</span>
+            <span>Upload PDF</span>
           </button>
         </div>
       </nav>
@@ -133,7 +184,7 @@ ${propLines}
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-400/20 bg-indigo-500/10 text-indigo-300 text-xs font-medium mb-6">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Next-Gen Client-Side Web Application</span>
+          <span>Local Files & Remote URLs Supported</span>
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-5 leading-tight">
@@ -144,39 +195,109 @@ ${propLines}
         </h1>
 
         <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed">
-          Pure client-side execution. Zero server uploads. Hardware-accelerated 60 FPS physics, memory virtualization, synthesized acoustics, and on-demand AI document insights.
+          Open local files or paste public remote URLs. Zero server storage, 60 FPS page-turn physics, memory virtualization, and on-demand AI document insights.
         </p>
 
-        {/* Free Upload Dropzone Banner */}
-        <div
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => {
-            e.preventDefault();
-            const f = e.dataTransfer.files?.[0];
-            if (f) handleFileUpload(f);
-          }}
-          className="border border-dashed border-indigo-500/40 bg-indigo-950/20 hover:bg-indigo-950/30 p-6 sm:p-8 rounded-2xl max-w-2xl mx-auto transition-all text-center cursor-pointer group"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept="application/pdf"
-            className="hidden"
-            onChange={e => {
-              const f = e.target.files?.[0];
-              if (f) handleFileUpload(f);
-            }}
-          />
-          <div className="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center mx-auto mb-3 text-indigo-400 group-hover:scale-110 transition-transform">
-            <Upload className="w-6 h-6" />
+        {/* Dual Mode Card: Local Dropzone OR Remote URL input */}
+        <div className="max-w-2xl mx-auto bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6 text-left">
+          {/* Mode Switcher Tabs */}
+          <div className="flex border-b border-white/10 pb-3 mb-5 gap-4 text-xs font-medium">
+            <button
+              onClick={() => setInputMode('upload')}
+              className={`flex items-center gap-2 pb-2 -mb-3.5 border-b-2 transition-all cursor-pointer ${
+                inputMode === 'upload' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Upload className="w-4 h-4 text-indigo-400" />
+              <span>Upload Local PDF (Free)</span>
+            </button>
+            <button
+              onClick={() => setInputMode('url')}
+              className={`flex items-center gap-2 pb-2 -mb-3.5 border-b-2 transition-all cursor-pointer ${
+                inputMode === 'url' ? 'border-emerald-500 text-white font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span>Open Remote URL</span>
+            </button>
           </div>
-          <h3 className="text-sm font-semibold text-white mb-1">
-            Drop your PDF file here, or <span className="text-indigo-400 underline decoration-indigo-400/40">browse files</span>
-          </h3>
-          <p className="text-xs text-slate-400">
-            Free forever • 100% Private (Runs locally in your browser)
-          </p>
+
+          {inputMode === 'upload' ? (
+            /* Upload Dropzone */
+            <div
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => {
+                e.preventDefault();
+                const f = e.dataTransfer.files?.[0];
+                if (f) handleFileUpload(f);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className="border border-dashed border-indigo-500/40 bg-indigo-950/20 hover:bg-indigo-950/30 p-6 rounded-xl transition-all text-center cursor-pointer group"
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="application/pdf"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFileUpload(f);
+                }}
+              />
+              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center mx-auto mb-2.5 text-indigo-400 group-hover:scale-110 transition-transform">
+                <Upload className="w-5 h-5" />
+              </div>
+              <h3 className="text-xs font-semibold text-white mb-1">
+                Drop your PDF file here, or <span className="text-indigo-400 underline decoration-indigo-400/40">browse files</span>
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                100% Client-Side • File never leaves your browser
+              </p>
+            </div>
+          ) : (
+            /* Remote URL Form */
+            <form onSubmit={handleRemoteUrlSubmit} className="space-y-4">
+              <div>
+                <label className="block text-slate-400 text-xs mb-1.5 font-medium">Public Remote PDF URL</label>
+                <div className="relative">
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://example.com/document.pdf"
+                    value={remoteUrlInput}
+                    onChange={e => setRemoteUrlInput(e.target.value)}
+                    className="w-full bg-black/40 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 pr-10"
+                  />
+                  <LinkIcon className="w-4 h-4 text-slate-500 absolute right-3 top-3" />
+                </div>
+              </div>
+
+              {/* Preset Sample URLs */}
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                <span>Try sample remote links:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = 'https://raw.githubusercontent.com/iamapinan/pdf-html5-page-flip/master/public/sample.pdf';
+                    setRemoteUrlInput(url);
+                  }}
+                  className="px-2 py-0.5 bg-white/5 hover:bg-white/10 rounded text-slate-300 border border-white/5 cursor-pointer"
+                >
+                  Technical Architecture Guide
+                </button>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Load Remote PDF</span>
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </section>
 
@@ -188,11 +309,19 @@ ${propLines}
           <div className="flex-1 bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col min-h-[640px] lg:min-h-[720px]">
             {/* Viewer Header Info */}
             <div className="h-11 px-4 bg-black/40 border-b border-white/10 flex items-center justify-between text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-indigo-400" />
+              <div className="flex items-center gap-2 truncate">
+                <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
                 <span className="text-slate-200 font-medium truncate max-w-xs">{fileName}</span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyShareLink}
+                  title="Share Direct Flipbook Link"
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded text-slate-200 cursor-pointer"
+                >
+                  {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5 text-indigo-400" />}
+                  <span className="hidden sm:inline">{copiedShareLink ? 'Link Copied!' : 'Share Link'}</span>
+                </button>
                 <button
                   onClick={() => setShowConfigDrawer(v => !v)}
                   className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 rounded text-slate-200 cursor-pointer"
@@ -224,6 +353,7 @@ ${propLines}
                 showThemeToggle={config.showThemeToggle}
                 showViewToggle={config.showViewToggle}
                 showFileUpload={config.showFileUpload}
+                showUrlInput={config.showUrlInput}
                 className="w-full h-full"
               />
             </div>
@@ -290,7 +420,8 @@ ${propLines}
                   { key: 'showSound', label: 'Paper Audio Synthesis' },
                   { key: 'showZoom', label: 'Zoom & Pan Controls' },
                   { key: 'showPrint', label: 'Export / Print Button' },
-                  { key: 'showFileUpload', label: 'Open File Button' },
+                  { key: 'showFileUpload', label: 'Local File Upload' },
+                  { key: 'showUrlInput', label: 'Remote URL Input' },
                 ].map(({ key, label }) => (
                   <label
                     key={key}
@@ -312,10 +443,11 @@ ${propLines}
                 onClick={() => {
                   setPdfSource('/sample.pdf');
                   setFileName('sample.pdf');
+                  window.history.pushState({}, '', window.location.pathname);
                 }}
                 className="w-full py-2 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-lg transition-colors font-medium text-center cursor-pointer"
               >
-                Reset to Sample Technical Guide
+                Reset to Sample Document
               </button>
             </div>
           )}
@@ -360,7 +492,18 @@ ${propLines}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Bento Card 1 */}
+          <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
+                <Globe className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h3 className="text-base font-semibold text-white mb-2">Remote PDF & Deep Links</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Open any remote PDF directly via URL input or query parameter (<code className="text-indigo-300 font-mono">?pdf=...</code>) with intelligent CORS fallback.
+              </p>
+            </div>
+          </div>
+
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
               <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
@@ -373,7 +516,6 @@ ${propLines}
             </div>
           </div>
 
-          {/* Bento Card 2 */}
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
               <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
@@ -386,7 +528,6 @@ ${propLines}
             </div>
           </div>
 
-          {/* Bento Card 3 */}
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
               <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
@@ -399,7 +540,6 @@ ${propLines}
             </div>
           </div>
 
-          {/* Bento Card 4 */}
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
               <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
@@ -412,20 +552,6 @@ ${propLines}
             </div>
           </div>
 
-          {/* Bento Card 5 */}
-          <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
-            <div>
-              <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">
-                <Search className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-semibold text-white mb-2">Full-Text Search & TOC</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Asynchronously parses PDF bookmarks into a dynamic Table of Contents and indexes all page text for instant keyword jumping.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento Card 6 */}
           <div className="p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col justify-between">
             <div>
               <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400 mb-4">

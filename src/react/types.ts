@@ -37,6 +37,8 @@ export interface PdfFlipbookProps {
   showViewToggle?: boolean;
   /** Enable local file open button & drag-and-drop (default: true) */
   showFileUpload?: boolean;
+  /** Enable open remote PDF via URL button (default: true) */
+  showUrlInput?: boolean;
   /** Flipping animation time in ms (default: 600) */
   flippingTime?: number;
   /** Custom container CSS class */
