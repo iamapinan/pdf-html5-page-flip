@@ -51,4 +51,6 @@ export interface PdfFlipbookProps {
   onPageChange?: (page: number, totalPages: number) => void;
   /** Callback fired when document is loaded */
   onDocumentLoad?: (doc: pdfjsLib.PDFDocumentProxy) => void;
+  /** Callback fired when a local file is selected/dropped inside viewer */
+  onFileSelect?: (file: File) => void;
 }

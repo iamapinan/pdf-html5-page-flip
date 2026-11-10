@@ -70,7 +70,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   height = '100%',
   width = '100%',
   onPageChange,
-  onDocumentLoad
+  onDocumentLoad,
+  onFileSelect
 }) => {
   // State
   const [currentTheme, setCurrentTheme] = useState<'dark' | 'light' | 'wood'>(theme);
@@ -108,6 +109,26 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   const renderedPagesRef = useRef<Set<number>>(new Set());
   const baseDimRef = useRef<{ width: number; height: number }>({ width: 595, height: 842 });
   const docIdRef = useRef<string>('doc');
+  const objectUrlRef = useRef<string | null>(null);
+
+  const isPdfFile = (file: File) => {
+    if (!file) return false;
+    return file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf') || !file.type;
+  };
+
+  // Component unmount cleanup
+  useEffect(() => {
+    return () => {
+      if (pageFlipRef.current) {
+        try { pageFlipRef.current.destroy(); } catch {}
+        pageFlipRef.current = null;
+      }
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   // Trigger lazy rendering
   const triggerLazyRender = useCallback(async (current: number, total: number) => {
@@ -190,51 +211,58 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       bookContainerRef.current.appendChild(pageEl);
     }
 
-    const stage = bookContainerRef.current.parentElement;
-    const availH = Math.max(380, (stage?.clientHeight || 600) - 40);
-    const availW = Math.max(300, (stage?.clientWidth || 800) - 40);
+    requestAnimationFrame(async () => {
+      if (!bookContainerRef.current) return;
+      const stage = bookContainerRef.current.parentElement;
+      const availH = Math.max(380, (stage?.clientHeight || 600) - 40);
+      const availW = Math.max(300, (stage?.clientWidth || 800) - 40);
 
-    let bH = availH;
-    let bW = Math.round((bH * baseDimRef.current.width) / baseDimRef.current.height);
+      let bH = availH;
+      let bW = Math.round((bH * baseDimRef.current.width) / baseDimRef.current.height);
 
-    if (isDoublePage && bW * 2 > availW) {
-      bW = Math.round(availW / 2);
-      bH = Math.round((bW * baseDimRef.current.height) / baseDimRef.current.width);
-    } else if (!isDoublePage && bW > availW) {
-      bW = availW;
-      bH = Math.round((bW * baseDimRef.current.height) / baseDimRef.current.width);
-    }
+      if (isDoublePage && bW * 2 > availW) {
+        bW = Math.round(availW / 2);
+        bH = Math.round((bW * baseDimRef.current.height) / baseDimRef.current.width);
+      } else if (!isDoublePage && bW > availW) {
+        bW = availW;
+        bH = Math.round((bW * baseDimRef.current.height) / baseDimRef.current.width);
+      }
 
-    bW = Math.round(bW * zoomLevel);
-    bH = Math.round(bH * zoomLevel);
+      bW = Math.max(200, Math.round(bW * zoomLevel));
+      bH = Math.max(280, Math.round(bH * zoomLevel));
 
-    const pf = new PageFlip(bookContainerRef.current, {
-      width: bW,
-      height: bH,
-      size: 'fixed',
-      minWidth: 200,
-      maxWidth: 1800,
-      minHeight: 300,
-      maxHeight: 2200,
-      maxShadowOpacity: 0.5,
-      showCover: true,
-      usePortrait: !isDoublePage,
-      flippingTime: flippingTime
+      try {
+        const pf = new PageFlip(bookContainerRef.current, {
+          width: bW,
+          height: bH,
+          size: 'fixed',
+          minWidth: 200,
+          maxWidth: 1800,
+          minHeight: 300,
+          maxHeight: 2200,
+          maxShadowOpacity: 0.5,
+          showCover: true,
+          usePortrait: !isDoublePage,
+          flippingTime: flippingTime
+        });
+
+        const pageElements = bookContainerRef.current.querySelectorAll<HTMLElement>('.page');
+        pf.loadFromHTML(pageElements);
+
+        pf.on('flip', (e: any) => {
+          const p = (e.data as number) + 1;
+          setCurrentPage(p);
+          if (showSound) soundManager.playPageFlip();
+          triggerLazyRender(p, totalPages);
+          onPageChange?.(p, totalPages);
+        });
+
+        pageFlipRef.current = pf;
+        await triggerLazyRender(currentPage, totalPages);
+      } catch (err) {
+        console.error('Failed to init PageFlip instance:', err);
+      }
     });
-
-    const pageElements = bookContainerRef.current.querySelectorAll<HTMLElement>('.page');
-    pf.loadFromHTML(pageElements);
-
-    pf.on('flip', (e: any) => {
-      const p = (e.data as number) + 1;
-      setCurrentPage(p);
-      if (showSound) soundManager.playPageFlip();
-      triggerLazyRender(p, totalPages);
-      onPageChange?.(p, totalPages);
-    });
-
-    pageFlipRef.current = pf;
-    await triggerLazyRender(currentPage, totalPages);
   }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, currentPage, triggerLazyRender, onPageChange]);
 
   // Load PDF Document with Remote CORS Fallback
@@ -244,17 +272,26 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     setLoadingText('Connecting to PDF source...');
 
     try {
-      let data: any = source;
-      if (source instanceof File) {
-        data = await source.arrayBuffer();
-        docIdRef.current = `${source.name}-${source.size}`;
+      let getDocParam: any;
+      if (source instanceof File || source instanceof Blob) {
+        if (objectUrlRef.current) {
+          URL.revokeObjectURL(objectUrlRef.current);
+        }
+        const objUrl = URL.createObjectURL(source);
+        objectUrlRef.current = objUrl;
+        getDocParam = { url: objUrl };
+        docIdRef.current = `${(source as File).name || 'uploaded'}-${source.size}`;
+      } else if (source instanceof ArrayBuffer) {
+        getDocParam = { data: new Uint8Array(source) };
+        docIdRef.current = `buf-${Date.now()}`;
       } else if (typeof source === 'string') {
+        getDocParam = { url: source };
         docIdRef.current = source.split('/').pop()?.split('?')[0] || 'doc';
         if (/^https?:\/\//i.test(source)) {
           setLoadingText(`Fetching remote PDF: ${source.substring(0, 45)}...`);
         }
       } else {
-        docIdRef.current = `doc-${Date.now()}`;
+        getDocParam = source;
       }
 
       // Load saved bookmarks for document
@@ -267,7 +304,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
       let doc: pdfjsLib.PDFDocumentProxy;
       try {
-        const task = pdfjsLib.getDocument(data);
+        const task = pdfjsLib.getDocument(getDocParam);
         task.onProgress = ({ loaded, total }: { loaded: number; total: number }) => {
           if (total > 0) {
             setLoadingProgress(Math.round((loaded / total) * 50) + 25);
@@ -481,7 +518,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   className="hidden"
                   onChange={e => {
                     const f = e.target.files?.[0];
-                    if (f) loadPdfDocument(f);
+                    if (f && isPdfFile(f)) {
+                      loadPdfDocument(f);
+                      onFileSelect?.(f);
+                    }
+                    e.target.value = '';
                   }}
                 />
               </>
@@ -855,7 +896,10 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           onDrop={e => {
             e.preventDefault();
             const f = e.dataTransfer.files?.[0];
-            if (f && f.type === 'application/pdf') loadPdfDocument(f);
+            if (f && isPdfFile(f)) {
+              loadPdfDocument(f);
+              onFileSelect?.(f);
+            }
           }}
         >
           {isLoading && (
