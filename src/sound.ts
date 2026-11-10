@@ -3,7 +3,7 @@
  * Generates natural friction and rustle without external .mp3 files
  */
 
-class SoundSynthesizer {
+export class SoundSynthesizer {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
 

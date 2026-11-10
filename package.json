@@ -1,20 +1,97 @@
 {
   "name": "pdf-html5-page-flip",
-  "private": true,
   "version": "2.0.0",
+  "description": "Realistic 3D HTML5 PDF Flipbook with React component, Web Component, and Web Audio synthesis",
+  "license": "Apache-2.0",
+  "author": "Apinan Worawut <iamapinan@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamapinan/pdf-html5-page-flip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iamapinan/pdf-html5-page-flip/issues"
+  },
+  "homepage": "https://flipbook.apps.gracer.ai",
+  "keywords": [
+    "pdf",
+    "flipbook",
+    "page-flip",
+    "pdfjs",
+    "react",
+    "react-component",
+    "html5",
+    "3d",
+    "canvas",
+    "web-audio"
+  ],
   "type": "module",
+  "main": "./dist/lib/index.cjs",
+  "module": "./dist/lib/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/lib/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/lib/index.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/types/react/index.d.ts",
+        "default": "./dist/lib/react.js"
+      },
+      "require": {
+        "types": "./dist/types/react/index.d.ts",
+        "default": "./dist/lib/react.cjs"
+      }
+    },
+    "./component": {
+      "import": {
+        "types": "./dist/types/component.d.ts",
+        "default": "./dist/lib/component.js"
+      },
+      "require": {
+        "types": "./dist/types/component.d.ts",
+        "default": "./dist/lib/component.cjs"
+      }
+    },
+    "./style.css": "./dist/lib/pdf-html5-page-flip.css"
+  },
+  "files": [
+    "dist/lib",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 5173",
-    "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 5173"
+    "dev": "vite --host 0.0.0.0 --port 5174",
+    "build:app": "tsc && vite build",
+    "build:lib": "tsc -p tsconfig.lib.json && vite build --config vite.config.lib.ts && cp dist/lib/pdf-html5-page-flip.css dist/lib/style.css",
+    "build": "npm run build:app && npm run build:lib",
+    "preview": "vite preview --host 0.0.0.0 --port 5174",
+    "prepack": "npm run build:lib"
   },
   "dependencies": {
     "lucide": "^0.475.0",
     "lucide-react": "^1.71.0",
     "page-flip": "^2.0.7",
-    "pdfjs-dist": "4.8.69",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "pdfjs-dist": "4.8.69"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.9",
@@ -24,5 +101,8 @@
     "tailwindcss": "^4.0.9",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
