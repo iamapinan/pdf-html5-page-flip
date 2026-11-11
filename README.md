@@ -7,6 +7,12 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4.x-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-flipbook.apps.gracer.ai-emerald?logo=googlechrome)](https://flipbook.apps.gracer.ai)
 
+<p align="center">
+  <a href="https://flipbook.apps.gracer.ai" target="_blank" rel="noopener noreferrer">
+    <img src="./screenshot.png" alt="PDF HTML5 Page Flip Pro Preview" width="100%" style="max-width: 920px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);" />
+  </a>
+</p>
+
 A modern, high-performance, client-side 3D Web Application and React Component that converts standard PDF files into realistic, hardware-accelerated HTML5 flipbooks with physics-based page turning, memory virtualization, full-text search, customizable branding, and on-demand AI document summarization.
 
 Live Production Website: [https://flipbook.apps.gracer.ai](https://flipbook.apps.gracer.ai) (or [https://pdf-flip.apps.gracer.ai](https://pdf-flip.apps.gracer.ai))
@@ -29,6 +35,14 @@ Live Production Website: [https://flipbook.apps.gracer.ai](https://flipbook.apps
 ## Quick Start (React Component)
 
 ### 1. Installation
+
+Configure your project `.npmrc` to route the `@iamapinan` scope to GitHub Packages:
+
+```shell
+@iamapinan:registry=https://npm.pkg.github.com
+```
+
+Install the package:
 
 ```bash
 npm install pdf-html5-page-flip
@@ -84,7 +98,7 @@ export default function DocumentViewer() {
 | `showViewToggle` | `boolean` | `true` | Enable single/double page switcher button |
 | `showFileUpload` | `boolean` | `true` | Enable local PDF picker button |
 | `showUrlInput` | `boolean` | `true` | Enable remote URL input modal button |
-| `flippingTime` | `number` | `600` | Duration of flip animation in milliseconds |
+| `flippingTime` | `number` | `800` | Duration of flip animation in milliseconds |
 | `onPageChange` | `(page, total) => void` | `undefined` | Callback fired when current page changes |
 | `onDocumentLoad`| `(pdfDoc) => void` | `undefined` | Callback fired when PDFDocumentProxy is resolved |
 | `onFileSelect` | `(file: File) => void` | `undefined` | Callback fired when a local file is opened inside viewer |
