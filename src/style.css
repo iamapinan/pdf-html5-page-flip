@@ -387,3 +387,84 @@ body.theme-wood .stf__wrapper::before {
 .animate-scroll-indicator {
   animation: scroll-pulse 2s ease-in-out infinite;
 }
+
+/* Dynamic Fluid Moving Aura Lights */
+@keyframes aura-fluid-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(120px, -60px) scale(1.15) rotate(15deg);
+  }
+  66% {
+    transform: translate(-90px, 80px) scale(0.9) rotate(-10deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aura-fluid-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-130px, 70px) scale(1.2) rotate(-20deg);
+  }
+  66% {
+    transform: translate(100px, -50px) scale(0.88) rotate(12deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aura-fluid-3 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(80px, 90px) scale(1.18);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes aura-backlight-pulse {
+  0%, 100% {
+    transform: scale(0.95) translate(0px, 0px);
+    opacity: 0.6;
+    filter: blur(60px);
+  }
+  33% {
+    transform: scale(1.1) translate(30px, -15px);
+    opacity: 0.85;
+    filter: blur(85px);
+  }
+  66% {
+    transform: scale(1.05) translate(-25px, 20px);
+    opacity: 0.75;
+    filter: blur(75px);
+  }
+}
+
+.animate-aura-fluid-1 {
+  animation: aura-fluid-1 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-fluid-2 {
+  animation: aura-fluid-2 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-fluid-3 {
+  animation: aura-fluid-3 14s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-backlight {
+  animation: aura-backlight-pulse 9s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+}

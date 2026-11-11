@@ -165,6 +165,31 @@ export function App() {
   const [remoteUrlInput, setRemoteUrlInput] = useState<string>('');
 
   // Configurable Props State (Defaulting to clean Light Aura Theme)
+  
+  // AI Provider & Model Configuration State (Synchronized with localStorage)
+  const [aiProvider, setAiProvider] = useState<'local' | 'gemini' | 'openai'>(() => {
+    return (localStorage.getItem('flipbook_ai_provider') as any) || 'local';
+  });
+  const [aiGeminiKey, setAiGeminiKey] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_gemini_key') || '';
+  });
+  const [aiGeminiModel, setAiGeminiModel] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_gemini_model') || 'gemini-2.5-flash';
+  });
+  const [aiOpenAiKey, setAiOpenAiKey] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_openai_key') || '';
+  });
+  const [aiOpenAiModel, setAiOpenAiModel] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_openai_model') || 'gpt-4o-mini';
+  });
+  const [aiSavedNotice, setAiSavedNotice] = useState(false);
+
+  const saveAiSettings = (key: string, val: string) => {
+    localStorage.setItem(key, val);
+    setAiSavedNotice(true);
+    setTimeout(() => setAiSavedNotice(false), 2000);
+  };
+
   const [config, setConfig] = useState({
     theme: 'light' as 'dark' | 'light' | 'wood',
     mode: 'auto' as 'auto' | 'single' | 'double',
@@ -326,21 +351,21 @@ ${propLines}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         {/* Sunbeam Yellow Luminous Orb */}
         <div
-          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[110px] opacity-75 animate-aura-1"
+          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[110px] opacity-75 animate-aura-fluid-1"
           style={{
             background: 'radial-gradient(circle, rgba(254, 240, 138, 0.85) 0%, rgba(253, 224, 71, 0.35) 40%, rgba(255, 255, 255, 0) 70%)'
           }}
         />
         {/* Sunset Blossom Pink Floating Orb */}
         <div
-          className="absolute top-12 -right-24 w-[650px] h-[500px] rounded-full blur-[100px] opacity-65 animate-aura-2"
+          className="absolute top-12 -right-24 w-[650px] h-[500px] rounded-full blur-[100px] opacity-65 animate-aura-fluid-2"
           style={{
             background: 'radial-gradient(circle, rgba(251, 113, 133, 0.75) 0%, rgba(244, 114, 182, 0.3) 45%, rgba(255, 255, 255, 0) 70%)'
           }}
         />
         {/* Soft Apricot Peach Floating Orb */}
         <div
-          className="absolute top-52 -left-24 w-[600px] h-[500px] rounded-full blur-[100px] opacity-55 animate-aura-1"
+          className="absolute top-52 -left-24 w-[600px] h-[500px] rounded-full blur-[100px] opacity-55 animate-aura-fluid-1"
           style={{
             background: 'radial-gradient(circle, rgba(254, 215, 170, 0.7) 0%, rgba(253, 186, 116, 0.25) 45%, rgba(255, 255, 255, 0) 70%)'
           }}
@@ -431,12 +456,14 @@ ${propLines}
         <main className="relative z-10">
           {/* Hero Section (Synex Editorial: ข้อความข้างบน + ภาพหน้าจอข้างล่าง + Animations) */}
           <section className="relative px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 max-w-[1400px] mx-auto text-center">
-            {/* Top Monospace Tag Capsule */}
-            <div className="animate-hero-1 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/80 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider mb-6">
-              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-              <span className="font-semibold text-rose-950 tracking-widest">[ DOCUMENT INTELLIGENCE REIMAGINED // 60 FPS GPU ENGINE ]</span>
-              <span className="text-pink-300">/</span>
-              <span className="text-slate-500 font-sans font-medium">Aura Edition v2.1</span>
+{/* Top App Name Badge */}
+            <div className="animate-hero-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs mb-6">
+              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
+                PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition</span>
             </div>
 
             {/* Headline with Synex Typographic Contrast */}
@@ -492,7 +519,7 @@ ${propLines}
             <div id="studio" className="relative mt-4 mb-4 w-full max-w-[1360px] mx-auto animate-hero-screen-in">
               {/* Backlight Luminous Aura Diffusion Glow */}
               <div
-                className="absolute -inset-4 sm:-inset-6 rounded-[40px] blur-3xl opacity-60 pointer-events-none -z-10 animate-aura-shimmer"
+                className="absolute -inset-4 sm:-inset-6 rounded-[40px] blur-3xl opacity-60 pointer-events-none -z-10 animate-aura-backlight"
                 style={{
                   background: 'radial-gradient(ellipse at 50% 50%, rgba(254, 240, 138, 0.45) 0%, rgba(251, 113, 133, 0.35) 45%, rgba(254, 215, 170, 0.25) 75%, transparent 100%)'
                 }}
@@ -1123,7 +1150,135 @@ export default function PdfReaderPage() {
               </div>
             </div>
 
-            {/* Toolbar Position Selector */}
+                        {/* AI Assistant Model & Provider Configuration */}
+            <div className="mb-5 border-b border-slate-200 pb-5">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-slate-800 text-[11px] font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                  <span>AI Model & Provider</span>
+                </label>
+                <span className="text-[10px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  {aiSavedNotice ? 'Saved!' : 'Ready'}
+                </span>
+              </div>
+
+              {/* Provider Selection (Tabs) */}
+              <div className="grid grid-cols-3 gap-1 mb-3">
+                {[
+                  { id: 'local', name: 'Offline', desc: 'Free & Private' },
+                  { id: 'gemini', name: 'Gemini', desc: 'Google AI' },
+                  { id: 'openai', name: 'OpenAI', desc: 'ChatGPT' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setAiProvider(p.id as any);
+                      saveAiSettings('flipbook_ai_provider', p.id);
+                    }}
+                    className={`py-1.5 px-2 rounded-lg font-semibold cursor-pointer text-center text-[11px] border transition-all ${
+                      aiProvider === p.id
+                        ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <div>{p.name}</div>
+                    <div className={`text-[9px] ${aiProvider === p.id ? 'text-rose-100' : 'text-slate-400'}`}>{p.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Gemini Provider Config */}
+              {aiProvider === 'gemini' && (
+                <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-700">Model:</span>
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-rose-600 font-medium hover:underline"
+                    >
+                      Get Free Gemini Key ↗
+                    </a>
+                  </div>
+                  <select
+                    value={aiGeminiModel}
+                    onChange={e => {
+                      setAiGeminiModel(e.target.value);
+                      saveAiSettings('flipbook_ai_gemini_model', e.target.value);
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-rose-500"
+                  >
+                    <option value="gemini-2.5-flash">gemini-2.5-flash (Fast & Powerful)</option>
+                    <option value="gemini-2.0-flash">gemini-2.0-flash (Sub-second)</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro (Deep reasoning)</option>
+                  </select>
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">Google AI API Key</label>
+                    <input
+                      type="password"
+                      placeholder="AIzaSy..."
+                      value={aiGeminiKey}
+                      onChange={e => {
+                        setAiGeminiKey(e.target.value);
+                        saveAiSettings('flipbook_ai_gemini_key', e.target.value);
+                      }}
+                      className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono placeholder-slate-400 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* OpenAI Provider Config */}
+              {aiProvider === 'openai' && (
+                <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-700">Model:</span>
+                    <a
+                      href="https://platform.openai.com/api-keys"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-rose-600 font-medium hover:underline"
+                    >
+                      Get OpenAI Key ↗
+                    </a>
+                  </div>
+                  <select
+                    value={aiOpenAiModel}
+                    onChange={e => {
+                      setAiOpenAiModel(e.target.value);
+                      saveAiSettings('flipbook_ai_openai_model', e.target.value);
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-rose-500"
+                  >
+                    <option value="gpt-4o-mini">gpt-4o-mini (Cost-efficient)</option>
+                    <option value="gpt-4o">gpt-4o (High intelligence)</option>
+                  </select>
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">OpenAI API Key</label>
+                    <input
+                      type="password"
+                      placeholder="sk-..."
+                      value={aiOpenAiKey}
+                      onChange={e => {
+                        setAiOpenAiKey(e.target.value);
+                        saveAiSettings('flipbook_ai_openai_key', e.target.value);
+                      }}
+                      className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono placeholder-slate-400 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Local Provider Note */}
+              {aiProvider === 'local' && (
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">100% Free & Offline:</span> Uses browser-native extractive NLP summarization with zero network calls and zero API key needed.
+                </div>
+              )}
+            </div>
+
+{/* Toolbar Position Selector */}
             <div className="mb-5 border-b border-slate-200 pb-5">
               <label className="block text-slate-600 text-[11px] font-semibold mb-1.5">Toolbar Floating Placement</label>
               <div className="grid grid-cols-2 gap-1.5">
