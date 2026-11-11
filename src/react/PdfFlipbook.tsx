@@ -478,6 +478,12 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     bW = Math.max(160, Math.floor(bW * zoomLevel));
     bH = Math.max(240, Math.floor(bH * zoomLevel));
 
+    // Ensure container matches exact book spread dimensions for perfect flex centering
+    const totalBookWidth = effectiveDoublePage ? bW * 2 : bW;
+    const totalBookHeight = bH;
+    container.style.width = `${totalBookWidth}px`;
+    container.style.height = `${totalBookHeight}px`;
+
     try {
       const pf = new PageFlip(container, {
         width: bW,

@@ -123,13 +123,9 @@ body.theme-wood {
 
 /* StPageFlip realistic book spine and page styling */
 .flipbook-container {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display: block;
   position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Base StPageFlip parent element */
@@ -137,34 +133,29 @@ body.theme-wood {
   box-shadow: none !important;
   border-radius: 12px;
   position: relative;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
 }
 
 .stf__wrapper {
   position: relative;
-  width: 100% !important;
   border-radius: 12px;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Perfect Horizontal Centering:
+/* Horizontal Centering:
    In dual-page mode:
-   - On page 1 (cover), page is rendered on left half (style.left: 0); translate +25% so cover sits dead-center in stage!
-   - On last page (back cover), page is on right half; translate -25% so back cover sits dead-center in stage!
-   - On open spreads or single page mode, translateX(0) for symmetrical alignment!
+   - When on page 1 (cover), the right half has the cover; translate container left by 25% of spread width to center cover in stage!
+   - When on last page (back cover), the left half has the back cover; translate container right by 25% to center back cover!
+   - When on open spreads or single page mode, translateX(0) for symmetrical alignment!
 */
-.flipbook-container.book-state-first-page .stf__wrapper {
+.flipbook-container.book-state-first-page {
   transform: translateX(-25%);
 }
 
-.flipbook-container.book-state-last-page .stf__wrapper {
+.flipbook-container.book-state-last-page {
   transform: translateX(25%);
 }
 
-.flipbook-container.book-state-open .stf__wrapper,
-.flipbook-container.book-state-single .stf__wrapper {
+.flipbook-container.book-state-open,
+.flipbook-container.book-state-single {
   transform: translateX(0);
 }
 
@@ -211,14 +202,14 @@ body.theme-wood .stf__wrapper::before {
     0 0 55px 0 rgba(15, 5, 0, 0.45);
 }
 
-/* First Page (Cover): Right half (50% to 100%) with window rounded corners */
+/* First Page (Cover): Right half (50% to 100%) matching cover position */
 .flipbook-container.book-state-first-page .stf__wrapper::before {
   left: 50%;
   width: 50%;
   border-radius: 12px;
 }
 
-/* Last Page (Back Cover): Left half (0 to 50%) with window rounded corners */
+/* Last Page (Back Cover): Left half (0 to 50%) matching back cover position */
 .flipbook-container.book-state-last-page .stf__wrapper::before {
   left: 0;
   width: 50%;
