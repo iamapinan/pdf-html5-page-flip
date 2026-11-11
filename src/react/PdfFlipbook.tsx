@@ -372,8 +372,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
 
     const stage = mountWrapperRef.current;
-    const availH = Math.max(340, (stage.clientHeight || 640) - 30);
-    const availW = Math.max(300, (stage.clientWidth || 800) - 30);
+    const isFs = typeof document !== 'undefined' && Boolean(document.fullscreenElement);
+    const availH = Math.max(340, (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 30));
+    const availW = Math.max(300, (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 30));
     const pageAspect = baseDimRef.current.width / baseDimRef.current.height;
 
     let bW: number;
@@ -381,8 +382,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
     if (isDoublePage) {
       // Fit 2 pages side-by-side
-      const maxW = Math.floor((availW - 40) / 2);
-      const maxH = availH - 20;
+      const maxW = Math.floor((availW - (isFs ? 50 : 40)) / 2);
+      const maxH = availH - (isFs ? 30 : 20);
       if (maxW / pageAspect <= maxH) {
         bW = maxW;
         bH = Math.floor(bW / pageAspect);
@@ -392,8 +393,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       }
     } else {
       // Fit single page
-      const maxW = availW - 40;
-      const maxH = availH - 20;
+      const maxW = availW - (isFs ? 50 : 40);
+      const maxH = availH - (isFs ? 30 : 20);
       if (maxW / pageAspect <= maxH) {
         bW = maxW;
         bH = Math.floor(bW / pageAspect);
@@ -582,6 +583,29 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     };
   }, [isLoading, totalPages, initFlipInstance]);
 
+  // Fullscreen change listener to dynamically rescale flipbook canvas
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setTimeout(() => {
+        if (!isLoading && totalPages > 0) {
+          initFlipInstance();
+        }
+      }, 100);
+      setTimeout(() => {
+        if (!isLoading && totalPages > 0) {
+          initFlipInstance();
+        }
+      }, 350);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, [isLoading, totalPages, initFlipInstance]);
+
   // Navigation handlers
   const handleTurnToPage = (p: number) => {
     if (p >= 1 && p <= totalPages && pageFlipRef.current) {
@@ -748,31 +772,147 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
   };
 
-  // Print current page
-  const handlePrint = () => {
-    if (!bookContainerRef.current) return;
-    const pageEl = bookContainerRef.current.querySelector(`.page[data-page-number="${currentPage}"]`);
-    const canvas = pageEl?.querySelector('canvas');
-    if (!canvas) {
+  // Print entire document at crisp 2x resolution
+  const handlePrint = async () => {
+    if (!pdfDocRef.current) {
       window.print();
       return;
     }
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(`
-        <html>
-          <head><title>Print Page ${currentPage}</title></head>
-          <body style="margin:0;display:flex;justify-content:center;align-items:center;">
-            <img src="${canvas.toDataURL()}" style="max-width:100%;max-height:100vh;" />
-            <script>window.onload=()=>{window.print();window.close();};</script>
-          </body>
-        </html>
-      `);
-      win.document.close();
+    const doc = pdfDocRef.current;
+    const total = doc.numPages;
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+      window.print();
+      return;
+    }
+
+    const docName = (typeof src === 'string' ? src.split('/').pop()?.split('?')[0] : 'Document') || 'Document';
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${docName} - Print Document</title>
+          <style>
+            @page {
+              size: auto;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #fff;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            .page-sheet {
+              page-break-after: always;
+              break-after: page;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 100vw;
+              min-height: 100vh;
+              box-sizing: border-box;
+            }
+            .page-sheet img {
+              width: 100%;
+              height: auto;
+              max-height: 100vh;
+              object-fit: contain;
+              display: block;
+            }
+            #print-status {
+              padding: 40px;
+              text-align: center;
+              color: #334155;
+            }
+            @media print {
+              #print-status {
+                display: none !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div id="print-status">
+            <h2>Rendering ${total} pages for print...</h2>
+            <p>Please wait a moment while document pages are generated.</p>
+          </div>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+
+    try {
+      const pageImages: string[] = [];
+      for (let i = 1; i <= total; i++) {
+        const page = await doc.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          pageImages.push(canvas.toDataURL('image/jpeg', 0.95));
+        }
+      }
+
+      if (printWin.document.body) {
+        const sheetsHtml = pageImages
+          .map((src, idx) => `<div class="page-sheet"><img src="${src}" alt="Page ${idx + 1}" /></div>`)
+          .join('');
+        printWin.document.body.innerHTML = sheetsHtml;
+        printWin.focus();
+        setTimeout(() => {
+          printWin.print();
+        }, 500);
+      }
+    } catch (err) {
+      console.error('Error during full document print:', err);
+      printWin.close();
+      window.print();
     }
   };
 
-  const isBookmarked = bookmarks.includes(currentPage);
+  // Recursive outline navigation renderer
+  const renderOutlineEntries = (items: any[], depth = 0) => {
+    return items.map((item, idx) => (
+      <div key={`${depth}-${idx}`} className="space-y-0.5">
+        <div
+          className={`py-1.5 px-2 rounded cursor-pointer transition-colors flex items-center justify-between text-xs ${
+            isLight
+              ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950 font-medium'
+              : 'hover:bg-white/10 text-slate-300 hover:text-white'
+          }`}
+          style={{ paddingLeft: `${8 + depth * 12}px` }}
+          onClick={() => {
+            if (item.dest) {
+              if (typeof item.dest === 'string') {
+                pdfDocRef.current?.getDestination(item.dest).then((destArr: any) => {
+                  if (destArr && destArr[0]) {
+                    pdfDocRef.current?.getPageIndex(destArr[0]).then(pIdx => handleTurnToPage(pIdx + 1));
+                  }
+                });
+              } else if (Array.isArray(item.dest) && item.dest[0]) {
+                pdfDocRef.current?.getPageIndex(item.dest[0]).then(pIdx => handleTurnToPage(pIdx + 1));
+              }
+            }
+          }}
+        >
+          <span className="truncate">{item.title}</span>
+        </div>
+        {item.items && item.items.length > 0 && renderOutlineEntries(item.items, depth + 1)}
+      </div>
+    ));
+  };
+
+    const isBookmarked = bookmarks.includes(currentPage);
+
+  // Themes
+  const isLight = currentTheme === 'light';
+  const isWood = currentTheme === 'wood';
 
   // Themes
   const themeClasses: Record<string, string> = {
@@ -790,7 +930,13 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     >
       {/* Top Glassmorphism Toolbar */}
       {showToolbar && (
-        <header className="h-14 border-b border-white/10 bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-3 md:px-5 z-40 text-slate-200 shrink-0">
+        <header className={`h-14 border-b flex items-center justify-between px-3 md:px-5 z-40 shrink-0 transition-colors ${
+          isLight
+            ? 'bg-white/95 border-slate-200 text-slate-800 shadow-xs'
+            : isWood
+            ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100'
+            : 'bg-slate-900/95 border-slate-800 text-slate-200'
+        }`}>
           <div className="flex items-center gap-2 md:gap-3">
             {showSidebar && (
               <button
@@ -799,16 +945,18 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   setTimeout(() => initFlipInstance(), 310);
                 }}
                 title={isSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
-                <PanelLeft className="w-5 h-5" style={{ color: isSidebarOpen ? accentColor : undefined }} />
+                <PanelLeft className="w-5 h-5" style={{ color: isSidebarOpen ? (accentColor || (isLight ? '#0f172a' : '#6366f1')) : undefined }} />
               </button>
             )}
 
             {showLogo && (
-              <div className="flex items-center gap-2 border-r border-white/10 pr-3 mr-1">
+              <div className={`flex items-center gap-2 border-r pr-3 mr-1 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
                 <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
-                <span className="font-semibold text-sm md:text-base tracking-tight hidden sm:inline text-white">
+                <span className={`font-semibold text-sm md:text-base tracking-tight hidden sm:inline ${isLight ? 'text-slate-900' : 'text-white'}`}>
                   Page Flip <span className="font-bold" style={{ color: accentColor }}>Pro</span>
                 </span>
               </div>
@@ -819,9 +967,13 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 <label
                   htmlFor="react-pdf-file-input"
                   title="Open PDF File"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 hover:bg-white/15 text-xs font-medium rounded-md transition-colors cursor-pointer text-slate-200 hover:text-white border border-white/10"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer border ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 border-slate-200'
+                      : 'bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white border-white/10'
+                  }`}
                 >
-                  <Upload className="w-4 h-4 text-indigo-300" />
+                  <Upload className="w-4 h-4 text-indigo-500" />
                   <span className="hidden md:inline">Open PDF</span>
                 </label>
                 <input
@@ -845,9 +997,13 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               <button
                 onClick={() => setIsUrlModalOpen(true)}
                 title="Open Remote PDF from URL"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 hover:bg-white/15 text-xs font-medium rounded-md transition-colors cursor-pointer text-slate-200 hover:text-white border border-white/10"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer border ${
+                  isLight
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950 border-slate-200'
+                    : 'bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white border-white/10'
+                }`}
               >
-                <Globe className="w-4 h-4 text-emerald-300" />
+                <Globe className="w-4 h-4 text-emerald-500" />
                 <span className="hidden md:inline">Open URL</span>
               </button>
             )}
@@ -860,7 +1016,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 disabled={currentPage <= 1}
                 onClick={() => handleTurnToPage(1)}
                 title="First page"
-                className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer"
+                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <ChevronsLeft className="w-4 h-4" />
               </button>
@@ -868,12 +1026,16 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 disabled={currentPage <= 1}
                 onClick={() => pageFlipRef.current?.flipPrev()}
                 title="Previous page"
-                className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer"
+                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center gap-1 px-2 py-1 bg-black/30 rounded-md border border-white/10 text-xs font-medium">
+              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono border ${
+                isLight ? 'bg-slate-100 border-slate-200 text-slate-800' : 'bg-black/30 border-white/10 text-slate-200'
+              }`}>
                 <input
                   type="number"
                   min={1}
@@ -892,17 +1054,21 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                     else setPageInputVal(String(currentPage));
                   }}
                   aria-label="Current page number"
-                  className="w-10 text-center bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-indigo-400 rounded text-white font-medium"
+                  className={`w-10 text-center bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-slate-400 rounded font-semibold ${
+                    isLight ? 'text-slate-900' : 'text-white'
+                  }`}
                 />
-                <span className="text-slate-400">/</span>
-                <span className="text-slate-300 min-w-[20px] text-center">{totalPages || '-'}</span>
+                <span className={isLight ? 'text-slate-400' : 'text-slate-500'}>/</span>
+                <span className={`min-w-[20px] text-center font-medium ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{totalPages || '-'}</span>
               </div>
 
               <button
                 disabled={currentPage >= totalPages}
                 onClick={() => pageFlipRef.current?.flipNext()}
                 title="Next page"
-                className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer"
+                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -910,7 +1076,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 disabled={currentPage >= totalPages}
                 onClick={() => handleTurnToPage(totalPages)}
                 title="Last page"
-                className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer"
+                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <ChevronsRight className="w-4 h-4" />
               </button>
@@ -923,35 +1091,39 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               <button
                 onClick={handleToggleBookmark}
                 title="Bookmark page"
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-amber-400"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-amber-500' : 'hover:bg-white/10 text-slate-300 hover:text-amber-400'
+                }`}
               >
-                <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'text-amber-400 fill-amber-400' : ''}`} />
+                <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'text-amber-500 fill-amber-500' : ''}`} />
               </button>
             )}
 
             {showZoom && (
-              <div className="hidden md:flex items-center gap-0.5 bg-black/20 rounded-md p-0.5 border border-white/10">
+              <div className={`hidden md:flex items-center gap-0.5 rounded-md p-0.5 border ${
+                isLight ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-black/20 border-white/10 text-slate-300'
+              }`}>
                 <button
                   onClick={() => setZoomLevel(z => Math.max(0.6, +(z - 0.15).toFixed(2)))}
                   title="Zoom out"
-                  className="p-1.5 hover:bg-white/10 rounded text-slate-300 hover:text-white cursor-pointer"
+                  className={`p-1.5 rounded cursor-pointer ${isLight ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-white/10 text-slate-300'}`}
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[11px] font-mono px-1.5 text-slate-300 min-w-[42px] text-center">
+                <span className={`text-[11px] font-mono px-1.5 min-w-[42px] text-center font-medium ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                   {Math.round(zoomLevel * 100)}%
                 </span>
                 <button
                   onClick={() => setZoomLevel(z => Math.min(2.0, +(z + 0.15).toFixed(2)))}
                   title="Zoom in"
-                  className="p-1.5 hover:bg-white/10 rounded text-slate-300 hover:text-white cursor-pointer"
+                  className={`p-1.5 rounded cursor-pointer ${isLight ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-white/10 text-slate-300'}`}
                 >
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setZoomLevel(1.0)}
                   title="Reset zoom"
-                  className="p-1.5 hover:bg-white/10 rounded text-slate-300 hover:text-white cursor-pointer"
+                  className={`p-1.5 rounded cursor-pointer ${isLight ? 'hover:bg-slate-200 text-slate-700' : 'hover:bg-white/10 text-slate-300'}`}
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
@@ -962,19 +1134,26 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               <button
                 onClick={() => setIsDoublePage(v => !v)}
                 title={isDoublePage ? 'Switch to 1-Page Mode' : 'Switch to 2-Page Mode'}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <Columns2 className="w-4 h-4" style={{ color: isDoublePage ? accentColor : undefined }} />
               </button>
             )}
 
+            {/* Anti-slop AI Summary Button */}
             {showAiSummary && (
               <button
                 onClick={handleAiSummary}
                 title="AI Document Summary"
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 hover:from-indigo-500/50 hover:to-purple-500/50 border border-indigo-400/40 rounded-lg text-indigo-200 hover:text-white text-xs font-medium cursor-pointer shadow-sm"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer shadow-xs transition-all ${
+                  isLight
+                    ? 'bg-slate-900 hover:bg-slate-800 text-white'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700'
+                }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-300 animate-pulse" />
+                <Sparkles className="w-3.5 h-3.5" style={{ color: isLight ? '#93c5fd' : '#a5b4fc' }} />
                 <span className="hidden lg:inline">AI Summary</span>
               </button>
             )}
@@ -982,8 +1161,10 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
             {showPrint && (
               <button
                 onClick={handlePrint}
-                title="Print current page"
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                title="Print full document (all pages)"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <Printer className="w-4 h-4" />
               </button>
@@ -993,21 +1174,25 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               <button
                 onClick={() => setIsMuted(soundManager.toggleMute())}
                 title={isMuted ? 'Unmute paper audio' : 'Mute paper audio'}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700' : 'hover:bg-white/10 text-slate-300'
+                }`}
               >
-                {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-indigo-400" />}
+                {isMuted ? <VolumeX className="w-4 h-4 text-slate-400" /> : <Volume2 className="w-4 h-4 text-indigo-500" />}
               </button>
             )}
 
             {showThemeToggle && (
               <button
                 onClick={() => {
-                  const seq: Array<'dark' | 'light' | 'wood'> = ['dark', 'light', 'wood'];
+                  const seq: Array<'light' | 'dark' | 'wood'> = ['light', 'dark', 'wood'];
                   const next = seq[(seq.indexOf(currentTheme) + 1) % seq.length];
                   setCurrentTheme(next);
                 }}
-                title="Cycle theme (Dark / Light / Wood)"
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                title="Cycle theme (Light / Dark / Wood)"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <Palette className="w-4 h-4" />
               </button>
@@ -1020,7 +1205,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   else document.exitFullscreen();
                 }}
                 title="Toggle Fullscreen"
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                }`}
               >
                 <Expand className="w-4 h-4" />
               </button>
@@ -1034,19 +1221,27 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         {/* Collapsible Sidebar */}
         {showSidebar && (
           <aside
-            className={`w-80 border-r border-white/10 bg-slate-900/95 backdrop-blur-xl flex flex-col z-30 transition-all duration-300 ease-in-out shrink-0 absolute inset-y-0 left-0 md:relative shadow-2xl md:shadow-none ${
+            className={`w-80 border-r flex flex-col z-30 transition-all duration-300 ease-in-out shrink-0 absolute inset-y-0 left-0 md:relative ${
+              isLight
+                ? 'bg-white/98 border-slate-200 text-slate-800 shadow-md'
+                : 'bg-slate-900/98 border-slate-800 text-slate-200 shadow-2xl'
+            } ${
               isSidebarOpen ? 'translate-x-0 md:ml-0' : '-translate-x-full md:-ml-80'
             }`}
           >
             {/* Tabs */}
-            <div className="flex border-b border-white/10 bg-black/20 text-xs font-medium text-slate-400">
+            <div className={`flex border-b text-xs font-medium ${
+              isLight ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-black/30 border-slate-800 text-slate-400'
+            }`}>
               {showOutline && (
                 <button
                   onClick={() => setActiveTab('outline')}
                   className={`flex-1 py-3 px-2 text-center border-b-2 flex justify-center items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'outline' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent hover:text-slate-200'
+                    activeTab === 'outline'
+                      ? isLight ? 'border-slate-900 text-slate-950 font-semibold bg-white' : 'border-indigo-500 text-white font-semibold'
+                      : isLight ? 'border-transparent hover:text-slate-900' : 'border-transparent hover:text-slate-200'
                   }`}
-                  style={{ borderColor: activeTab === 'outline' ? accentColor : undefined }}
+                  style={{ borderColor: activeTab === 'outline' ? (accentColor || (isLight ? '#0f172a' : '#6366f1')) : undefined }}
                 >
                   <ListTree className="w-3.5 h-3.5" />
                   <span>Outline</span>
@@ -1056,9 +1251,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 <button
                   onClick={() => setActiveTab('search')}
                   className={`flex-1 py-3 px-2 text-center border-b-2 flex justify-center items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'search' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent hover:text-slate-200'
+                    activeTab === 'search'
+                      ? isLight ? 'border-slate-900 text-slate-950 font-semibold bg-white' : 'border-indigo-500 text-white font-semibold'
+                      : isLight ? 'border-transparent hover:text-slate-900' : 'border-transparent hover:text-slate-200'
                   }`}
-                  style={{ borderColor: activeTab === 'search' ? accentColor : undefined }}
+                  style={{ borderColor: activeTab === 'search' ? (accentColor || (isLight ? '#0f172a' : '#6366f1')) : undefined }}
                 >
                   <Search className="w-3.5 h-3.5" />
                   <span>Search</span>
@@ -1068,9 +1265,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 <button
                   onClick={() => setActiveTab('bookmarks')}
                   className={`flex-1 py-3 px-2 text-center border-b-2 flex justify-center items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'bookmarks' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent hover:text-slate-200'
+                    activeTab === 'bookmarks'
+                      ? isLight ? 'border-slate-900 text-slate-950 font-semibold bg-white' : 'border-indigo-500 text-white font-semibold'
+                      : isLight ? 'border-transparent hover:text-slate-900' : 'border-transparent hover:text-slate-200'
                   }`}
-                  style={{ borderColor: activeTab === 'bookmarks' ? accentColor : undefined }}
+                  style={{ borderColor: activeTab === 'bookmarks' ? (accentColor || (isLight ? '#0f172a' : '#6366f1')) : undefined }}
                 >
                   <BookmarkIcon className="w-3.5 h-3.5" />
                   <span>Marks</span>
@@ -1080,9 +1279,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 <button
                   onClick={() => setActiveTab('thumbs')}
                   className={`flex-1 py-3 px-2 text-center border-b-2 flex justify-center items-center gap-1.5 cursor-pointer ${
-                    activeTab === 'thumbs' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent hover:text-slate-200'
+                    activeTab === 'thumbs'
+                      ? isLight ? 'border-slate-900 text-slate-950 font-semibold bg-white' : 'border-indigo-500 text-white font-semibold'
+                      : isLight ? 'border-transparent hover:text-slate-900' : 'border-transparent hover:text-slate-200'
                   }`}
-                  style={{ borderColor: activeTab === 'thumbs' ? accentColor : undefined }}
+                  style={{ borderColor: activeTab === 'thumbs' ? (accentColor || (isLight ? '#0f172a' : '#6366f1')) : undefined }}
                 >
                   <Grid className="w-3.5 h-3.5" />
                   <span>Thumbs</span>
@@ -1091,33 +1292,15 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
             </div>
 
             {/* Pane Contents */}
-            <div className="flex-1 overflow-y-auto p-3 text-xs text-slate-300">
+            <div className={`flex-1 overflow-y-auto p-3 text-xs ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
               {activeTab === 'outline' && (
                 <div className="space-y-1">
                   {outlineItems.length > 0 ? (
-                    outlineItems.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="py-1.5 px-2 hover:bg-white/10 rounded cursor-pointer transition-colors"
-                        onClick={() => {
-                          if (item.dest) {
-                            if (typeof item.dest === 'string') {
-                              pdfDocRef.current?.getDestination(item.dest).then((destArr: any) => {
-                                if (destArr && destArr[0]) {
-                                  pdfDocRef.current?.getPageIndex(destArr[0]).then(idx => handleTurnToPage(idx + 1));
-                                }
-                              });
-                            } else if (Array.isArray(item.dest) && item.dest[0]) {
-                              pdfDocRef.current?.getPageIndex(item.dest[0]).then(idx => handleTurnToPage(idx + 1));
-                            }
-                          }
-                        }}
-                      >
-                        {item.title}
-                      </div>
-                    ))
+                    renderOutlineEntries(outlineItems)
                   ) : (
-                    <div className="text-center py-10 text-slate-500">No bookmarks in this document.</div>
+                    <div className={`text-center py-10 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                      No outline bookmarks found in this document.
+                    </div>
                   )}
                 </div>
               )}
@@ -1130,12 +1313,16 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                       placeholder="Search text in PDF..."
                       value={searchQuery}
                       onChange={e => handleSearch(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 pr-8"
+                      className={`w-full rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 pr-8 border ${
+                        isLight
+                          ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-slate-400'
+                          : 'bg-black/40 border-white/10 text-white placeholder-slate-500 focus:ring-indigo-400'
+                      }`}
                     />
                     {searchQuery && (
                       <button
                         onClick={() => handleSearch('')}
-                        className="absolute right-2 top-2 text-slate-400 hover:text-white"
+                        className={`absolute right-2 top-2 ${isLight ? 'text-slate-400 hover:text-slate-700' : 'text-slate-400 hover:text-white'}`}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -1144,16 +1331,20 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
                   <div className="space-y-1">
                     {searchQuery && searchResults.length === 0 && (
-                      <div className="text-center py-6 text-slate-500">No matches found.</div>
+                      <div className={`text-center py-6 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>No matches found.</div>
                     )}
                     {searchResults.map((res, i) => (
                       <div
                         key={i}
                         onClick={() => handleTurnToPage(res.page)}
-                        className="p-2 hover:bg-white/10 rounded-lg cursor-pointer transition-colors border border-white/5"
+                        className={`p-2 rounded-lg cursor-pointer transition-colors border ${
+                          isLight
+                            ? 'hover:bg-slate-100 border-slate-200/60 text-slate-800'
+                            : 'hover:bg-white/10 border-white/5 text-slate-200'
+                        }`}
                       >
-                        <div className="font-semibold text-indigo-400 text-[11px] mb-0.5">Page {res.page}</div>
-                        <div className="text-slate-300 leading-snug">{res.snippet}</div>
+                        <div className={`font-semibold text-[11px] mb-0.5 ${isLight ? 'text-slate-900' : 'text-indigo-400'}`}>Page {res.page}</div>
+                        <div className={`leading-snug ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{res.snippet}</div>
                       </div>
                     ))}
                   </div>
@@ -1163,12 +1354,14 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               {activeTab === 'bookmarks' && (
                 <div className="space-y-1">
                   {bookmarks.length === 0 ? (
-                    <div className="text-center py-10 text-slate-500">No bookmarks saved yet.</div>
+                    <div className={`text-center py-10 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>No bookmarks saved yet.</div>
                   ) : (
                     bookmarks.map(p => (
                       <div
                         key={p}
-                        className="flex items-center justify-between p-2 hover:bg-white/10 rounded-lg cursor-pointer border border-white/5 group"
+                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border group ${
+                          isLight ? 'hover:bg-slate-100 border-slate-200/60' : 'hover:bg-white/10 border-white/5'
+                        }`}
                       >
                         <span onClick={() => handleTurnToPage(p)} className="flex-1 font-medium">
                           Page {p}
@@ -1182,7 +1375,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                               return n;
                             });
                           }}
-                          className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1"
+                          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 p-1"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -1193,7 +1386,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               )}
 
               {/* Real Visual Thumbnails */}
-              {activeTab === 'thumbs' && (
+              {showThumbnails && activeTab === 'thumbs' && (
                 <div className="grid grid-cols-2 gap-2">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                     <ThumbnailItem

@@ -1,7 +1,7 @@
 %PDF-1.4
 %‚„œ”
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<< /Type /Catalog /Pages 2 0 R /Outlines 16 0 R >>
 endobj
 2 0 obj
 << /Type /Pages /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R 8 0 R] /Count 6 >>
@@ -28,7 +28,7 @@ endobj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
 endobj
 10 0 obj
-<< /Length 904 >>
+<< /Length 909 >>
 stream
 0.08 0.11 0.18 rg
 0 0 595 842 re f
@@ -50,7 +50,7 @@ BT /F1 16 Tf 80 635 Td (Next-Gen 3D Digital Flipbook Engine) Tj ET
 BT /F1 13 Tf 80 560 Td (Open-Source Synthetic Showcase Document) Tj ET
 0.60 0.65 0.75 rg
 BT /F1 11 Tf 80 530 Td (This document is purely generated for rendering and performance testing.) Tj ET
-BT /F1 11 Tf 80 505 Td (Contains zero private or customer-specific information.) Tj ET
+BT /F1 11 Tf 80 505 Td (Contains complete navigation outlines and table of contents.) Tj ET
 BT /F1 11 Tf 80 480 Td (Built with Vite, TypeScript, PDF.js, and HTML5 Canvas.) Tj ET
 0.2 0.25 0.38 rg
 80 400 160 32 re f
@@ -146,7 +146,7 @@ BT /F1 9 Tf 500 50 Td (Page 3) Tj ET
 endstream
 endobj
 13 0 obj
-<< /Length 1068 >>
+<< /Length 1069 >>
 stream
 0.98 0.98 0.99 rg
 0 0 595 842 re f
@@ -173,7 +173,7 @@ BT /F1 10 Tf 80 580 Td (import 'pdf-html5-page-flip/style.css';) Tj ET
 1 1 1 rg
 BT /F1 10 Tf 80 550 Td (export default function Reader() {) Tj ET
 0.7 0.9 0.7 rg
-BT /F1 10 Tf 100 530 Td (return <PdfFlipbook src="/my-book.pdf" theme="dark" />;) Tj ET
+BT /F1 10 Tf 100 530 Td (return <PdfFlipbook src="/my-book.pdf" theme="light" />;) Tj ET
 1 1 1 rg
 BT /F1 10 Tf 80 510 Td (}) Tj ET
 0.6 0.6 0.6 rg
@@ -182,14 +182,14 @@ BT /F1 9 Tf 500 50 Td (Page 4) Tj ET
 endstream
 endobj
 14 0 obj
-<< /Length 1069 >>
+<< /Length 1080 >>
 stream
 0.98 0.98 0.99 rg
 0 0 595 842 re f
 0.39 0.40 0.95 rg
 0 832 595 10 re f
 0.1 0.12 0.18 rg
-BT /F1 22 Tf 60 760 Td (4. Interactive Controls) Tj ET
+BT /F1 22 Tf 60 760 Td (4. Interactive Controls & Features) Tj ET
 0.4 0.45 0.5 rg
 BT /F1 10 Tf 60 740 Td (INTUITIVE NAVIGATION AND READING TOOLS) Tj ET
 0.85 0.87 0.90 RG
@@ -244,26 +244,54 @@ BT /F1 11 Tf 80 470 Td (Live Demo: https://flipbook.apps.gracer.ai) Tj ET
 BT /F1 10 Tf 80 120 Td (End of Document - Page 6 of 6) Tj ET
 endstream
 endobj
+16 0 obj
+<< /Type /Outlines /First 17 0 R /Last 22 0 R /Count 6 >>
+endobj
+17 0 obj
+<< /Title (Cover & Document Overview) /Parent 16 0 R  /Next 18 0 R /Dest [3 0 R /Fit] >>
+endobj
+18 0 obj
+<< /Title (1. Architecture & Web Workers) /Parent 16 0 R /Prev 17 0 R /Next 19 0 R /Dest [4 0 R /Fit] >>
+endobj
+19 0 obj
+<< /Title (2. Performance Benchmarks) /Parent 16 0 R /Prev 18 0 R /Next 20 0 R /Dest [5 0 R /Fit] >>
+endobj
+20 0 obj
+<< /Title (3. React Component Usage) /Parent 16 0 R /Prev 19 0 R /Next 21 0 R /Dest [6 0 R /Fit] >>
+endobj
+21 0 obj
+<< /Title (4. Interactive Controls & Features) /Parent 16 0 R /Prev 20 0 R /Next 22 0 R /Dest [7 0 R /Fit] >>
+endobj
+22 0 obj
+<< /Title (5. Project Summary & License) /Parent 16 0 R /Prev 21 0 R  /Dest [8 0 R /Fit] >>
+endobj
 xref
-0 16
+0 23
 0000000000 65535 f 
 0000000015 00000 n 
-0000000064 00000 n 
-0000000151 00000 n 
-0000000278 00000 n 
-0000000405 00000 n 
-0000000532 00000 n 
-0000000659 00000 n 
-0000000786 00000 n 
-0000000913 00000 n 
-0000000988 00000 n 
-0000001944 00000 n 
-0000003272 00000 n 
-0000004600 00000 n 
-0000005721 00000 n 
-0000006843 00000 n 
+0000000081 00000 n 
+0000000168 00000 n 
+0000000295 00000 n 
+0000000422 00000 n 
+0000000549 00000 n 
+0000000676 00000 n 
+0000000803 00000 n 
+0000000930 00000 n 
+0000001005 00000 n 
+0000001966 00000 n 
+0000003294 00000 n 
+0000004622 00000 n 
+0000005744 00000 n 
+0000006877 00000 n 
+0000007521 00000 n 
+0000007595 00000 n 
+0000007700 00000 n 
+0000007821 00000 n 
+0000007938 00000 n 
+0000008054 00000 n 
+0000008180 00000 n 
 trailer
-<< /Size 16 /Root 1 0 R >>
+<< /Size 23 /Root 1 0 R >>
 startxref
-7487
+8288
 %%EOF
