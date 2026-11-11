@@ -1,0 +1,39 @@
+# PDF HTML5 Page Flip Pro - Comprehensive Reference & API Manual
+
+Website: https://flipbook.apps.gracer.ai
+GitHub: https://github.com/iamapinan/pdf-html5-page-flip
+Author: Apinan Worawichitsilp (@iamapinan)
+License: Apache-2.0
+
+## Architectural Overview
+PDF HTML5 Page Flip Pro is designed from the ground up for zero-latency, private, client-side document presentation.
+1. Rendering Engine: Mozilla PDF.js runs in dedicated background Web Workers, parsing raw binary PDF byte streams directly into GPU-accelerated HTML5 canvases.
+2. 3D Turning Simulation: CSS 3D transforms with custom cubic-bezier easing deliver natural page curl, depth shadow gradients, and spine crease effects.
+3. Audio Synthesis: The Web Audio API procedurally synthesizes realistic multi-layer white-noise filtered paper friction sounds on flip events without loading audio assets.
+4. Memory Virtualization: Visible pages are rendered at full devicePixelRatio, while distant pages are culled to prevent browser memory leaks on multi-hundred-page documents.
+
+## React Component Props (<PdfFlipbook />)
+- src (string, required): Local path or remote URL to PDF file.
+- className (string, optional): Additional wrapper CSS classes.
+- showToolbar (boolean, default true): Toggle floating toolbar.
+- showOutline (boolean, default true): Toggle PDF outline/bookmark drawer.
+- showSearch (boolean, default true): Toggle full-text search drawer.
+- showThumbnail (boolean, default true): Toggle thumbnail strip.
+- showPageNumber (boolean, default true): Toggle interactive page number counter.
+- showZoom (boolean, default true): Toggle zoom controls (In/Out/Fit/Reset).
+- showFullscreen (boolean, default true): Toggle fullscreen toggle.
+- showPrint (boolean, default true): Toggle full-document printing.
+- showSound (boolean, default true): Toggle synthesized page-flip sound toggle.
+- showThemePicker (boolean, default true): Toggle theme selector (Dark, Light, Wood).
+- showAiSummary (boolean, default true): Toggle AI Document Summarizer.
+- accentColor (string, default '#f43f5e'): Primary accent brand color (Hex).
+- theme ('dark' | 'light' | 'wood', default 'light'): Default visual canvas theme.
+- initialPage (number, default 1): Starting page number.
+- onPageChange ((current: number, total: number) => void): Page navigation callback.
+
+## Frequently Asked Questions (FAQ)
+Q: Does PDF HTML5 Page Flip Pro transmit documents to a cloud server?
+A: No. All parsing and rendering execute completely inside the client browser. No document data is ever sent across the network.
+
+Q: Can I use this in Next.js App Router (SSR)?
+A: Yes. Import with dynamic import `next/dynamic` with `{ ssr: false }` since PDF.js relies on browser window and canvas APIs.

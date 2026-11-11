@@ -1253,9 +1253,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               <button
                 onClick={handleAiSummary}
                 title="AI Document Summary"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-300 text-white bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-pink-400 shadow-sm hover:shadow-md hover:shadow-fuchsia-500/25 active:scale-95 border border-white/25 select-none shrink-0"
+                className="flex items-center justify-center px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-300 text-white bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-pink-400 shadow-sm hover:shadow-md hover:shadow-fuchsia-500/25 active:scale-95 border border-white/25 select-none shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-200 fill-amber-200/40 animate-pulse" />
                 <span className="inline tracking-wide font-medium">AI Summary</span>
               </button>
             )}

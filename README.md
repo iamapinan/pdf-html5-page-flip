@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://flipbook.apps.gracer.ai" target="_blank" rel="noopener noreferrer">
-    <img src="./screenshot.png" alt="PDF HTML5 Page Flip Pro Preview" width="100%" style="max-width: 920px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);" />
+    <img src="./docs/cover.png" alt="PDF HTML5 Page Flip Pro Preview" width="100%" style="max-width: 920px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);" />
   </a>
 </p>
 

@@ -139,6 +139,12 @@ const CodeViewer: React.FC<{ code: string }> = ({ code }) => {
   );
 };
 
+const GithubIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+  </svg>
+);
+
 export function App() {
   // Navigation View: 'studio' | 'docs'
   const [activeView, setActiveView] = useState<'studio' | 'docs'>('studio');
@@ -422,61 +428,99 @@ ${propLines}
       {/* VIEW: STUDIO VIEWER */}
       {activeView === 'studio' && (
         <main className="relative z-10">
-          {/* Hero Section (Aura Premium Redesign) */}
-          <section className="relative px-6 pt-10 pb-8 sm:pt-14 sm:pb-12 max-w-5xl mx-auto text-center">
-            {/* Luminous Shimmering Status Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs text-slate-800 text-xs font-medium mb-6">
-              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-              <span className="font-semibold text-rose-900">Aura Edition 2.1</span>
-              <span className="text-slate-300">•</span>
-              <span>Smooth Soft Flip • Liquid Glass Floating Toolbar • Full Outlines</span>
+          {/* Hero Section (Synex Architectural & Swiss Editorial Layout) */}
+          <section className="relative px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14 max-w-6xl mx-auto">
+            {/* Top Monospace Tag Capsule */}
+            <div className="flex items-center justify-center sm:justify-start mb-6">
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-200/90 bg-white/85 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                <span className="font-semibold text-slate-900 tracking-widest">[ SYSTEM // GPU ACCELERATION ]</span>
+                <span className="text-slate-300">/</span>
+                <span className="text-slate-500 font-sans">Aura Engine v2.1</span>
+              </div>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 mb-4 leading-[1.12]">
-              The HTML5 PDF Flipbook Engine <br />
-              <span className="bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
-                Engineered for Physical Paper Elegance
-              </span>
-            </h1>
+            {/* Asymmetric Swiss Grid Headline & Narrative */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-10 text-left">
+              <div className="lg:col-span-7">
+                <h1 className="text-4xl sm:text-6xl lg:text-[66px] font-extrabold tracking-tight text-slate-950 leading-[1.06] sm:leading-[1.02]">
+                  The New Standard in Digital Flipbooks.
+                </h1>
+              </div>
+              <div className="lg:col-span-5 flex flex-col justify-end space-y-4">
+                <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
+                  A high-performance client-side runtime with genuine 60 FPS cubic-bezier peel physics, Web Audio acoustic friction synthesis, full-text search, and on-demand AI document synthesis.
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <button
+                    onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/25"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Launch Interactive Studio</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
-              Transform PDF files into ultra-realistic 3D pages with hardware-accelerated canvas physics, natural multi-layer paper friction audio, AI document summaries, and Apple liquid glass controls.
-            </p>
+                  <div
+                    onClick={() => {
+                      navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
+                      setCopiedInstall(true);
+                      setTimeout(() => setCopiedInstall(false), 2000);
+                    }}
+                    className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-mono bg-white/80 hover:bg-white border border-slate-200/90 text-slate-700 cursor-pointer shadow-xs transition-all active:scale-95"
+                  >
+                    <span className="text-rose-500 font-bold">&gt;_</span>
+                    <span>npm i @iamapinan/pdf-html5-page-flip</span>
+                    {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-            {/* Quick Action Bar with Aura Glow */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-              <button
-                onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-6 py-3 rounded-2xl text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/25"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Launch Interactive Studio</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+            {/* 3 Bento Architectural Index Cards [ 01 ], [ 02 ], [ 03 ] */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
+              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 01 ]</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
+                  100% Client-Side Privacy
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Decoded directly via Mozilla PDF.js inside dedicated Web Workers. Zero telemetry, zero cloud storage exposure.
+                </p>
+              </div>
 
-              <button
-                onClick={() => setActiveView('docs')}
-                className="px-5 py-3 rounded-2xl text-slate-800 hover:text-slate-950 text-xs font-semibold bg-white/80 hover:bg-white border border-white/80 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
-              >
-                <FileText className="w-4 h-4 text-rose-500" />
-                <span>Read Developer Manual</span>
-              </button>
+              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 02 ]</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
+                  60 FPS Peel Simulation
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  GPU-accelerated cubic-bezier curvature, realistic spine shadow depth, and dynamic Web Audio paper friction.
+                </p>
+              </div>
 
-              <div
-                onClick={() => {
-                  navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
-                  setCopiedInstall(true);
-                  setTimeout(() => setCopiedInstall(false), 2000);
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-mono bg-white/70 hover:bg-white border border-slate-200/80 text-slate-700 cursor-pointer shadow-xs transition-all active:scale-95"
-              >
-                <span className="text-rose-500 font-bold">&gt;_</span>
-                <span>npm i @iamapinan/pdf-html5-page-flip</span>
-                {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 03 ]</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
+                  React & Next.js Drop-in
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Full TypeScript types, configurable liquid glass toolbars, custom accent color, and vanilla Web Component.
+                </p>
               </div>
             </div>
 
             {/* High-End Source Selector Surface */}
+{/* High-End Source Selector Surface */}
             <div className="max-w-2xl mx-auto bg-white border border-slate-200/90 rounded-2xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] overflow-hidden p-6 text-left">
               {/* Selector Tabs */}
               <div className="flex border-b border-slate-200 pb-3 mb-5 gap-6 text-xs font-medium">
@@ -1263,14 +1307,72 @@ export default function PdfReaderPage() {
         <span>Configure Props</span>
       </button>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-10 px-6 text-center text-xs text-slate-500">
-        <p className="mb-2 font-medium text-slate-700">
-          PDF HTML5 Page Flip Pro • Aura Premium Light Edition
-        </p>
-        <p>
-          Open-source Apache-2.0 License • High-performance client-side document reading
-        </p>
+      {/* FAQ Section (Optimized for SEO, GEO & Answer Engines) */}
+      <section className="px-4 sm:px-6 py-16 max-w-5xl mx-auto border-t border-slate-200/80">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="text-xs font-mono text-slate-400 tracking-wider uppercase">[ FAQ // DIRECT ANSWERS ]</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1 mb-3">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Everything you need to know about the architecture, privacy, and integration of PDF HTML5 Page Flip Pro.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 className="text-sm font-bold text-slate-900 mb-2">What is PDF HTML5 Page Flip Pro?</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              PDF HTML5 Page Flip Pro is an open-source, client-side web application and React component that transforms standard PDF documents into interactive 3D flipbooks with natural page-peel physics, Web Audio paper sound, full-text search, and on-demand AI document summarization.
+            </p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 className="text-sm font-bold text-slate-900 mb-2">Does it upload confidential documents to the cloud?</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              No. All parsing and rendering execute completely inside the client device using Mozilla PDF.js in dedicated Web Workers. Confidential documents, financial statements, and proprietary books never leave your browser.
+            </p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 className="text-sm font-bold text-slate-900 mb-2">How do I integrate this in React or Next.js?</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Install via npm i @iamapinan/pdf-html5-page-flip, import the component and stylesheet, and pass the PDF source prop. For Next.js App Router, wrap it with next/dynamic and ssr: false since PDF.js requires browser window and canvas APIs.
+            </p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 className="text-sm font-bold text-slate-900 mb-2">Does it support mobile and tablet touch gestures?</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Yes. The library includes native touch event handlers for swiping, dragging page corners, single-page mobile layout responsiveness, and automatic Retina/HiDPI viewport scaling.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer with Credit to @iamapinan */}
+      <footer className="border-t border-slate-200/80 bg-white/80 backdrop-blur-md py-12 px-6 text-center text-xs text-slate-500">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-slate-800 text-sm tracking-tight">PDF HTML5 Page Flip Pro</span>
+            <span className="px-2 py-0.5 text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60 rounded-full font-mono">v2.1</span>
+          </div>
+          <p className="text-slate-600">
+            Open-source Apache-2.0 License • High-performance client-side document reading
+          </p>
+          <div className="flex items-center gap-1.5 text-slate-600 pt-1">
+            <span>Created & developed with care by</span>
+            <a
+              href="https://github.com/iamapinan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-semibold text-slate-900 hover:text-rose-600 transition-colors underline decoration-slate-300 hover:decoration-rose-500 underline-offset-4"
+            >
+              <GithubIcon className="w-3.5 h-3.5" />
+              <span>@iamapinan</span>
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );
