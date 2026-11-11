@@ -123,9 +123,9 @@ body.theme-wood {
 
 /* StPageFlip realistic book spine and page styling */
 .flipbook-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
   position: relative;
   width: 100%;
   height: 100%;
@@ -135,16 +135,40 @@ body.theme-wood {
 /* Base StPageFlip parent element */
 .stf__parent {
   box-shadow: none !important;
-  border-radius: 6px;
+  border-radius: 12px;
   position: relative;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .stf__wrapper {
   position: relative;
-  border-radius: 6px;
+  width: 100% !important;
+  border-radius: 12px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dynamic Seamless Book Shadow Pseudo-element */
+/* Perfect Horizontal Centering:
+   In dual-page mode:
+   - On page 1 (cover), page is rendered on left half (style.left: 0); translate +25% so cover sits dead-center in stage!
+   - On last page (back cover), page is on right half; translate -25% so back cover sits dead-center in stage!
+   - On open spreads or single page mode, translateX(0) for symmetrical alignment!
+*/
+.flipbook-container.book-state-first-page .stf__wrapper {
+  transform: translateX(-25%);
+}
+
+.flipbook-container.book-state-last-page .stf__wrapper {
+  transform: translateX(25%);
+}
+
+.flipbook-container.book-state-open .stf__wrapper,
+.flipbook-container.book-state-single .stf__wrapper {
+  transform: translateX(0);
+}
+
+/* Dynamic Window-Style 4-Sided Ambient Book Shadow */
 .stf__wrapper::before {
   content: '';
   position: absolute;
@@ -152,52 +176,67 @@ body.theme-wood {
   height: var(--book-height, 100%);
   pointer-events: none;
   z-index: 0;
-  border-radius: 6px;
-  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.5), 0 8px 20px -4px rgba(0, 0, 0, 0.32), 0 1px 3px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              top 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 4px 16px -2px rgba(0, 0, 0, 0.2),
+    0 16px 40px -4px rgba(0, 0, 0, 0.28),
+    0 28px 72px -8px rgba(0, 0, 0, 0.35),
+    0 0 50px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* Light Theme - Soft, Elegant Ambient Shadow */
+/* Light Theme - Window-Style Ambient Shadow */
 body.theme-light .stf__wrapper::before {
-  box-shadow: 0 22px 46px -12px rgba(15, 23, 42, 0.2), 0 8px 18px -5px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 
+    0 0 0 1px rgba(15, 23, 42, 0.08),
+    0 4px 14px -2px rgba(15, 23, 42, 0.12),
+    0 14px 36px -4px rgba(15, 23, 42, 0.16),
+    0 26px 65px -8px rgba(15, 23, 42, 0.2),
+    0 0 45px 0 rgba(15, 23, 42, 0.1);
 }
 
-/* Wood Theme - Deep Warm Ambient Shadow */
+/* Wood Theme - Deep Ambient Shadow */
 body.theme-wood .stf__wrapper::before {
-  box-shadow: 0 28px 60px -12px rgba(15, 5, 0, 0.75), 0 12px 24px -6px rgba(15, 5, 0, 0.5), 0 1px 4px rgba(15, 5, 0, 0.3);
+  box-shadow: 
+    0 0 0 1px rgba(15, 5, 0, 0.45),
+    0 4px 18px -2px rgba(15, 5, 0, 0.5),
+    0 16px 44px -4px rgba(15, 5, 0, 0.65),
+    0 32px 80px -8px rgba(15, 5, 0, 0.75),
+    0 0 55px 0 rgba(15, 5, 0, 0.45);
 }
 
-/* First Page (Cover): Right half only, ZERO shadow on the left */
+/* First Page (Cover): Right half (50% to 100%) with window rounded corners */
 .flipbook-container.book-state-first-page .stf__wrapper::before {
   left: 50%;
   width: 50%;
-  border-radius: 2px 6px 6px 2px;
+  border-radius: 12px;
 }
 
-/* Last Page (Back Cover): Left half only, ZERO shadow on the right */
+/* Last Page (Back Cover): Left half (0 to 50%) with window rounded corners */
 .flipbook-container.book-state-last-page .stf__wrapper::before {
   left: 0;
   width: 50%;
-  border-radius: 6px 2px 2px 6px;
+  border-radius: 12px;
 }
 
-/* Open Spread (Pages 2-3, 4-5, etc.): Full width spanning both pages */
+/* Open Spread: Full width spanning both pages */
 .flipbook-container.book-state-open .stf__wrapper::before {
   left: 0;
   width: 100%;
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
-/* Single Page Mode: Full width for the single active page */
+/* Single Page Mode: Full width for single active page */
 .flipbook-container.book-state-single .stf__wrapper::before {
   left: 0;
   width: 100%;
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 .page {
@@ -205,7 +244,42 @@ body.theme-wood .stf__wrapper::before {
   overflow: hidden;
   position: relative;
   box-sizing: border-box;
+  border-radius: 12px;
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.02);
+}
+
+.pdf-page-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Seamless spine joinery in open spread mode */
+.flipbook-container.book-state-open .page.--left {
+  border-radius: 12px 0 0 12px;
+}
+.flipbook-container.book-state-open .page.--left .pdf-page-canvas {
+  border-radius: 12px 0 0 12px;
+}
+.flipbook-container.book-state-open .page.--right {
+  border-radius: 0 12px 12px 0;
+}
+.flipbook-container.book-state-open .page.--right .pdf-page-canvas {
+  border-radius: 0 12px 12px 0;
+}
+
+/* Single page mode or closed cover: all 4 corners rounded */
+.flipbook-container.book-state-first-page .page,
+.flipbook-container.book-state-last-page .page,
+.flipbook-container.book-state-single .page {
+  border-radius: 12px;
+}
+.flipbook-container.book-state-first-page .pdf-page-canvas,
+.flipbook-container.book-state-last-page .pdf-page-canvas,
+.flipbook-container.book-state-single .pdf-page-canvas {
+  border-radius: 12px;
 }
 
 /* Book spine lighting & gradients */

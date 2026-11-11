@@ -1022,24 +1022,16 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   };
   const themeClass = themeClasses[currentTheme] || themeClasses.dark;
 
-  return (
-    <div
-      ref={containerRef}
-      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
-      style={{ height, width, ['--flip-accent' as any]: accentColor }}
-    >
-      {/* Apple Liquid Glass Toolbar with configurable top/bottom floating overlay */}
-      {showToolbar && (
-        <header
+  // Render dedicated non-overlapping toolbar
+  const renderToolbar = () => (
+    <header
           onWheel={handleToolbarWheel}
           className={`${
             toolbarStyle === 'glass-overlay'
-              ? (toolbarPosition === 'bottom'
-                  ? 'absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-40 max-w-[96%] w-fit h-13 rounded-2xl px-2.5 sm:px-4 py-1.5'
-                  : 'absolute top-3 sm:top-4 inset-x-0 mx-auto z-40 max-w-[96%] w-fit h-13 rounded-2xl px-2.5 sm:px-4 py-1.5') +
+              ? 'w-fit max-w-[96%] h-12 sm:h-13 rounded-2xl px-2.5 sm:px-4 py-1.5 shadow-lg ' +
                 ' ' +
                 (isLight ? 'liquid-glass-light text-slate-800' : isWood ? 'liquid-glass-wood text-amber-100' : 'liquid-glass-dark text-slate-100')
-              : 'h-14 border-b flex items-center px-2 sm:px-3 md:px-5 z-40 shrink-0 ' +
+              : 'w-full h-14 ' + (toolbarPosition === 'bottom' ? 'border-t ' : 'border-b ') + 'flex items-center px-2 sm:px-3 md:px-5 ' +
                 (isLight ? 'bg-white/95 border-slate-200 text-slate-800' : isWood ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100' : 'bg-slate-900/95 border-slate-800 text-slate-200')
           } transition-all duration-300 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-none whitespace-nowrap`}
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -1319,6 +1311,19 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           </div>
         </div>
       </header>
+  );
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
+      style={{ height, width, ['--flip-accent' as any]: accentColor }}
+    >
+      {/* Top Dedicated Toolbar Slot (Never overlaps book) */}
+      {showToolbar && toolbarPosition === 'top' && (
+        <div className={`shrink-0 flex items-center justify-center w-full z-30 ${toolbarStyle === 'glass-overlay' ? 'px-2 sm:px-4 pt-2 sm:pt-3 pb-1' : ''}`}>
+          {renderToolbar()}
+        </div>
       )}
 
       {/* Main Section */}
@@ -1546,6 +1551,13 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           )}
         </main>
       </div>
+
+      {/* Bottom Dedicated Toolbar Slot (Never overlaps book) */}
+      {showToolbar && toolbarPosition === 'bottom' && (
+        <div className={`shrink-0 flex items-center justify-center w-full z-30 ${toolbarStyle === 'glass-overlay' ? 'px-2 sm:px-4 pt-1 pb-2 sm:pb-3' : ''}`}>
+          {renderToolbar()}
+        </div>
+      )}
 
       {/* Open URL Modal */}
       {isUrlModalOpen && (
