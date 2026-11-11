@@ -1,6 +1,12 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
 export interface PdfFlipbookProps {
+  /** Enable double click or double tap on paper to zoom (default: true) */
+  doubleClickZoom?: boolean;
+  /** Enable immersive mode (expands full screen with blurred transparent background) */
+  immersive?: boolean;
+  /** Callback fired when immersive mode changes */
+  onImmersiveChange?: (isImmersive: boolean) => void;
   /** PDF source: URL string, File object, or ArrayBuffer */
   src: string | File | ArrayBuffer;
   /** Background theme: 'dark' | 'light' | 'wood' */
@@ -47,6 +53,8 @@ export interface PdfFlipbookProps {
   showFileUpload?: boolean;
   /** Enable open remote PDF via URL button (default: true) */
   showUrlInput?: boolean;
+  /** Enable keyboard & gesture shortcuts button & modal (default: true) */
+  showShortcuts?: boolean;
   /** Flipping animation time in ms (default: 600) */
   flippingTime?: number;
   /** Custom container CSS class */

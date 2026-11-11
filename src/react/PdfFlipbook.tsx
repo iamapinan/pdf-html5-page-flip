@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PageFlip } from 'page-flip';
@@ -14,6 +15,7 @@ import {
   ZoomOut,
   ZoomIn,
   Maximize2,
+  Minimize2,
   Columns2,
   Sparkles,
   Printer,
@@ -35,7 +37,9 @@ import {
   Link as LinkIcon,
   Eye,
   EyeOff,
-  Sliders
+  Sliders,
+  Keyboard,
+  Move
 } from 'lucide-react';
 import { soundManager } from '../sound';
 import { PdfFlipbookProps } from './types';
@@ -144,7 +148,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   showViewToggle = true,
   showFileUpload = true,
   showUrlInput = true,
+  doubleClickZoom = true,
+  showShortcuts = true,
   flippingTime = 800,
+  immersive: propImmersive,
+  onImmersiveChange,
   className = '',
   height = '100%',
   width = '100%',
@@ -167,6 +175,33 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   const [loadingText, setLoadingText] = useState('Loading PDF...');
   const [loadingProgress, setLoadingProgress] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Immersive Mode State & Handlers
+  const [internalImmersive, setInternalImmersive] = useState(false);
+  const isImmersive = propImmersive !== undefined ? propImmersive : internalImmersive;
+
+  const toggleImmersive = useCallback((val?: boolean) => {
+    const next = val !== undefined ? val : !isImmersive;
+    if (propImmersive === undefined) {
+      setInternalImmersive(next);
+    }
+    if (next) {
+      setIsSidebarOpen(false);
+    }
+    onImmersiveChange?.(next);
+  }, [isImmersive, propImmersive, onImmersiveChange]);
+
+  // Listen for global custom event
+  useEffect(() => {
+    const handleCustomToggle = () => toggleImmersive();
+    window.addEventListener('flipbook:toggle-immersive', handleCustomToggle);
+    return () => window.removeEventListener('flipbook:toggle-immersive', handleCustomToggle);
+  }, [toggleImmersive]);
+
+
+
+
+
 
   // AI Assistant State
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -199,6 +234,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   const [outlineItems, setOutlineItems] = useState<any[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const panRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [urlInput, setUrlInput] = useState('');
 
   // DOM Refs
@@ -441,8 +478,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
     const stage = mountWrapperRef.current;
     const isFs = typeof document !== 'undefined' && Boolean(document.fullscreenElement);
-    const availH = Math.max(260, (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 20));
-    const availW = Math.max(260, (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 16));
+    const isExpanded = isImmersive || isFs;
+    const availH = Math.max(260, (isImmersive ? window.innerHeight - 100 : (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 20)));
+    const availW = Math.max(260, (isImmersive ? window.innerWidth - 60 : (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 16)));
     const pageAspect = baseDimRef.current.width / baseDimRef.current.height;
 
     // Automatically adapt to single page portrait on narrow mobile screens (< 560px)
@@ -539,7 +577,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     } catch (err) {
       console.error('Failed to init PageFlip instance:', err);
     }
-  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, updateBookStateClass, onPageChange]);
+  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, updateBookStateClass, onPageChange, isImmersive]);
 
   // Load PDF Document with Remote CORS Fallback
   const loadPdfDocument = useCallback(async (source: string | File | ArrayBuffer, isRetry = false) => {
@@ -655,7 +693,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     if (!isLoading && totalPages > 0) {
       initFlipInstance();
     }
-  }, [isLoading, totalPages, isDoublePage, zoomLevel, initFlipInstance]);
+  }, [isLoading, totalPages, isDoublePage, zoomLevel, isImmersive, initFlipInstance]);
 
   // Debounced window resize handler
   useEffect(() => {
@@ -707,6 +745,193 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
   };
 
+  
+  
+  // Reset pan translation whenever zoom is reset
+  useEffect(() => {
+    if (zoomLevel <= 1.05) {
+      panRef.current = { x: 0, y: 0 };
+      const container = bookContainerRef.current;
+      if (container) {
+        container.style.setProperty('--pan-x', '0px');
+        container.style.setProperty('--pan-y', '0px');
+        container.classList.remove('is-panning');
+      }
+    }
+  }, [zoomLevel]);
+
+  // Native Double Click & Tap to Zoom Listener directly on stage
+  useEffect(() => {
+    const stage = mountWrapperRef.current;
+    if (!stage || !doubleClickZoom) return;
+
+    let lastTap = 0;
+    const onDblClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, textarea, a, select')) return;
+      setZoomLevel(prev => (prev > 1.05 ? 1.0 : 1.6));
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, textarea, a, select')) return;
+      const now = Date.now();
+      if (now - lastTap < 320) {
+        setZoomLevel(prev => (prev > 1.05 ? 1.0 : 1.6));
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    };
+
+    stage.addEventListener('dblclick', onDblClick);
+    stage.addEventListener('touchend', onTouchEnd);
+    return () => {
+      stage.removeEventListener('dblclick', onDblClick);
+      stage.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [doubleClickZoom]);
+
+  // Corner-Only Flip Filter & Zoom Pan Drag Navigation Controller
+  useEffect(() => {
+    const stage = mountWrapperRef.current;
+    if (!stage) return;
+
+    let isPointerDown = false;
+    let isPanDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialPanX = 0;
+    let initialPanY = 0;
+
+    // Check if pointer is in the corner (+ 40px margin)
+    const isInFlipCorner = (clientX: number, clientY: number): boolean => {
+      const container = bookContainerRef.current;
+      if (!container) return false;
+      const rect = container.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return false;
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      // Base fold corner in PageFlip is 50px, +40px = 90px threshold
+      const cornerThreshold = Math.min(140, Math.max(90, Math.min(rect.width, rect.height) * 0.16));
+
+      const isTopLeft = x <= cornerThreshold && y <= cornerThreshold;
+      const isBottomLeft = x <= cornerThreshold && y >= rect.height - cornerThreshold;
+      const isTopRight = x >= rect.width - cornerThreshold && y <= cornerThreshold;
+      const isBottomRight = x >= rect.width - cornerThreshold && y >= rect.height - cornerThreshold;
+
+      return isTopLeft || isBottomLeft || isTopRight || isBottomRight;
+    };
+
+    const getMaxPan = () => {
+      const container = bookContainerRef.current;
+      if (!container) return { maxX: 120, maxY: 120 };
+      const stageW = stage.clientWidth || 800;
+      const stageH = stage.clientHeight || 600;
+      const bookW = container.offsetWidth || 800;
+      const bookH = container.offsetHeight || 600;
+      return {
+        maxX: Math.max(0, (bookW - stageW) / 2 + 150),
+        maxY: Math.max(0, (bookH - stageH) / 2 + 150),
+      };
+    };
+
+    // Capture phase pointerdown interceptor
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, textarea, a, select')) return;
+
+      const isTouch = 'touches' in e;
+      const clientX = isTouch ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = isTouch ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+
+      const isZoomed = zoomLevel > 1.05;
+      const inCorner = isInFlipCorner(clientX, clientY);
+
+      if (isZoomed) {
+        // Zoomed mode: Always handle pan navigation; prevent PageFlip folding/flipping
+        e.stopImmediatePropagation();
+        if (!isTouch && (e as MouseEvent).button !== 0) return;
+
+        isPointerDown = true;
+        isPanDragging = false;
+        startX = clientX;
+        startY = clientY;
+        initialPanX = panRef.current.x;
+        initialPanY = panRef.current.y;
+        return;
+      }
+
+      // Normal 100% mode:
+      // Flip ONLY when click or drag on corner + 40px of page!
+      if (inCorner) {
+        // Allow event to reach PageFlip
+        return;
+      } else {
+        // Prevent PageFlip from initiating peel/flip from page center
+        e.stopImmediatePropagation();
+      }
+    };
+
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      if (!isPointerDown) return;
+
+      const isTouch = 'touches' in e;
+      const clientX = isTouch ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = isTouch ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
+
+      if (!isPanDragging && (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4)) {
+        isPanDragging = true;
+        bookContainerRef.current?.classList.add('is-panning');
+        stage.classList.add('cursor-grabbing');
+      }
+
+      if (isPanDragging) {
+        if (e.cancelable) e.preventDefault();
+        const { maxX, maxY } = getMaxPan();
+        const targetX = Math.max(-maxX, Math.min(maxX, initialPanX + deltaX));
+        const targetY = Math.max(-maxY, Math.min(maxY, initialPanY + deltaY));
+
+        panRef.current = { x: targetX, y: targetY };
+        const container = bookContainerRef.current;
+        if (container) {
+          container.style.setProperty('--pan-x', `${targetX}px`);
+          container.style.setProperty('--pan-y', `${targetY}px`);
+        }
+      }
+    };
+
+    const handlePointerUp = () => {
+      if (isPointerDown) {
+        isPointerDown = false;
+        isPanDragging = false;
+        bookContainerRef.current?.classList.remove('is-panning');
+        stage.classList.remove('cursor-grabbing');
+      }
+    };
+
+    stage.addEventListener('mousedown', handlePointerDown, { capture: true });
+    stage.addEventListener('touchstart', handlePointerDown, { capture: true, passive: false });
+    window.addEventListener('mousemove', handlePointerMove, { passive: false });
+    window.addEventListener('touchmove', handlePointerMove, { passive: false });
+    window.addEventListener('mouseup', handlePointerUp);
+    window.addEventListener('touchend', handlePointerUp);
+
+    return () => {
+      stage.removeEventListener('mousedown', handlePointerDown, { capture: true });
+      stage.removeEventListener('touchstart', handlePointerDown, { capture: true });
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('mouseup', handlePointerUp);
+      window.removeEventListener('touchend', handlePointerUp);
+    };
+  }, [zoomLevel]);
+
   const handleTurnToPage = (p: number) => {
     if (p >= 1 && p <= totalPages && pageFlipRef.current) {
       pageFlipRef.current.turnToPage(p - 1);
@@ -718,6 +943,94 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       onPageChange?.(p, totalPages);
     }
   };
+
+  // Complete Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when user is typing in inputs or textareas
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // Escape: Close modals or exit immersive
+      if (e.key === 'Escape') {
+        if (isShortcutsModalOpen) {
+          setIsShortcutsModalOpen(false);
+          return;
+        }
+        if (isAiModalOpen) {
+          setIsAiModalOpen(false);
+          return;
+        }
+        if (isUrlModalOpen) {
+          setIsUrlModalOpen(false);
+          return;
+        }
+        if (isImmersive) {
+          toggleImmersive(false);
+          return;
+        }
+      }
+
+      // Next page
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        if (e.key === ' ') e.preventDefault();
+        pageFlipRef.current?.flipNext();
+      }
+      // Previous page
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        pageFlipRef.current?.flipPrev();
+      }
+      // First page
+      else if (e.key === 'Home') {
+        handleTurnToPage(1);
+      }
+      // Last page
+      else if (e.key === 'End') {
+        handleTurnToPage(totalPages);
+      }
+      // Toggle Immersive Mode (f or i)
+      else if ((e.key === 'f' || e.key === 'F' || e.key === 'i' || e.key === 'I') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        toggleImmersive();
+      }
+      // Zoom controls (+, -, 0)
+      else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setZoomLevel(z => Math.min(2.0, +(z + 0.15).toFixed(2)));
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        setZoomLevel(z => Math.max(0.6, +(z - 0.15).toFixed(2)));
+      } else if (e.key === '0') {
+        e.preventDefault();
+        setZoomLevel(1.0);
+      }
+      // Toggle Audio (m)
+      else if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey) {
+        setIsMuted(soundManager.toggleMute());
+      }
+      // Toggle Sidebar (s)
+      else if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
+        setIsSidebarOpen(v => !v);
+      }
+      // Toggle Shortcuts modal (? or Shift+/)
+      else if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        setIsShortcutsModalOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAiModalOpen, isUrlModalOpen, isShortcutsModalOpen, isImmersive, totalPages, toggleImmersive]);
+
 
   // Toggle Bookmark
   const handleToggleBookmark = () => {
@@ -1299,31 +1612,70 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               </button>
             )}
 
-            {showFullscreen && (
+            {showShortcuts && (
               <button
-                onClick={() => {
-                  if (!document.fullscreenElement) containerRef.current?.requestFullscreen();
-                  else document.exitFullscreen();
-                }}
-                title="Toggle Fullscreen"
+                onClick={() => setIsShortcutsModalOpen(true)}
+                title="Keyboard & Touch Shortcuts (?)"
                 className={`p-2 rounded-lg transition-colors cursor-pointer ${
                   isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
                 }`}
               >
-                <Expand className="w-4 h-4" />
+                <Keyboard className="w-4 h-4" />
               </button>
+            )}
+
+            {isImmersive ? (
+              <button
+                onClick={() => toggleImmersive(false)}
+                title="Exit Immersive Mode (Esc)"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-xs shadow-md cursor-pointer transition-all active:scale-95 shrink-0 ml-1"
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+                <span>Exit</span>
+                <kbd className="text-[9px] bg-black/30 px-1.5 py-0.5 rounded font-mono">ESC</kbd>
+              </button>
+            ) : (
+              showFullscreen && (
+                <button
+                  onClick={() => toggleImmersive(true)}
+                  title="Enter Immersive Reading Mode (F / I)"
+                  className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                    isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Expand className="w-4 h-4" />
+                </button>
+              )
             )}
           </div>
         </div>
       </header>
   );
 
-  return (
+  const bookContent = (
     <div
       ref={containerRef}
-      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
-      style={{ height, width, ['--flip-accent' as any]: accentColor }}
+      className={`font-sans select-none overflow-hidden transition-all duration-500 ease-out ${
+        isImmersive
+          ? 'flipbook-immersive-active fixed inset-0 z-[100] w-screen h-screen flex flex-col justify-between p-2 sm:p-5'
+          : `relative flex flex-col transition-colors duration-300 h-full w-full ${themeClass} ${className}`
+      }`}
+      style={{
+        height: isImmersive ? '100vh' : height,
+        width: isImmersive ? '100vw' : width,
+        ['--flip-accent' as any]: accentColor
+      }}
     >
+      {/* Non-overlapping discrete close button for Immersive Mode */}
+      {isImmersive && (
+        <button
+          onClick={() => toggleImmersive(false)}
+          title="Exit Immersive Mode (Esc)"
+          className="fixed top-3.5 right-4 sm:top-4 sm:right-6 z-50 w-9 h-9 rounded-full bg-slate-900/80 hover:bg-slate-900 text-slate-300 hover:text-white border border-white/20 shadow-xl flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 backdrop-blur-md pointer-events-auto"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
       {/* Top Dedicated Toolbar Slot (Never overlaps book) */}
       {showToolbar && toolbarPosition === 'top' && (
         <div className={`shrink-0 flex items-center justify-center w-full z-30 ${toolbarStyle === 'glass-overlay' ? 'px-2 sm:px-4 pt-2 sm:pt-3 pb-1' : ''}`}>
@@ -1540,7 +1892,16 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         <main
           id="stage"
           ref={mountWrapperRef}
-          className="flex-1 flex justify-center items-center overflow-hidden relative w-full h-full min-h-0"
+          className={`flex-1 flex justify-center items-center overflow-hidden relative w-full h-full min-h-0 select-none ${
+            zoomLevel > 1.05 ? 'cursor-grab' : doubleClickZoom ? 'cursor-zoom-in' : 'cursor-default'
+          }`}
+          title={
+            zoomLevel > 1.05
+              ? "Drag to pan & navigate canvas • Double-click to reset zoom"
+              : doubleClickZoom
+              ? "Click or drag corner (+40px) to turn page • Double-click to zoom"
+              : "Click or drag corner (+40px) to turn page"
+          }
         >
           {isLoading && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm gap-4">
@@ -1832,6 +2193,149 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           </div>
         </div>
       )}
+
+      {/* Keyboard & Gesture Shortcuts Modal */}
+      {isShortcutsModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setIsShortcutsModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative text-slate-800 dark:text-slate-100 flex flex-col max-h-[90vh] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20">
+                  <Keyboard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-950 dark:text-white flex items-center gap-2">
+                    Keyboard & Touch Shortcuts
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Fast navigation, zoom, and interactive reader gestures
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsShortcutsModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Shortcuts Content List */}
+            <div className="overflow-y-auto py-4 space-y-5 flex-1 pr-1 text-xs">
+              {/* Category 1: Page Navigation */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">
+                  Page Flipping & Navigation
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Turn to Next Page</span>
+                    <div className="flex items-center gap-1">
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">→</kbd>
+                      <span className="text-slate-400">or</span>
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">Space</kbd>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Turn to Previous Page</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">←</kbd>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Corner 3D Peel Turn</span>
+                    <span className="text-rose-600 dark:text-rose-400 font-medium text-[11px]">Click or Drag corner +40px</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Jump to Cover / End</span>
+                    <div className="flex items-center gap-1">
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">Home</kbd>
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">End</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category 2: Zoom & Navigation */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">
+                  Zoom & Pan Navigation
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Quick Zoom (160% ⇋ 100%)</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-medium text-[11px]">Double Click / Double Tap</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Pan / Navigate Page</span>
+                    <span className="text-rose-600 dark:text-rose-400 font-medium text-[11px]">Drag Canvas (when zoomed)</span>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Zoom In / Out</span>
+                    <div className="flex items-center gap-1">
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">+</kbd>
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">-</kbd>
+                      <span className="text-slate-400">/</span>
+                      <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">0 (Reset)</kbd>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category 3: Reading Modes & Sound */}
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">
+                  Modes & Controls
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Toggle Immersive Theater Mode</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">F</kbd>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Exit Immersive / Close Modals</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">Esc</kbd>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Mute / Unmute Paper Audio</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">M</kbd>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Toggle Sidebar (TOC / Outlines)</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">S</kbd>
+                  </div>
+                  <div className="flex items-center justify-between py-1 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Open Shortcuts Help</span>
+                    <kbd className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono shadow-xs font-semibold">?</kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-slate-400">Tip: Press ? anytime to open this guide</span>
+              <button
+                onClick={() => setIsShortcutsModalOpen(false)}
+                className="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-slate-900 dark:bg-white dark:text-slate-900 shadow-xs hover:opacity-90 transition-all cursor-pointer"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+
+  if (isImmersive && typeof document !== 'undefined') {
+    return createPortal(bookContent, document.body);
+  }
+
+  return bookContent;
 };

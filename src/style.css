@@ -125,7 +125,13 @@ body.theme-wood {
 .flipbook-container {
   display: block;
   position: relative;
+  --pan-x: 0px;
+  --pan-y: 0px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flipbook-container.is-panning {
+  transition: none !important;
 }
 
 /* Base StPageFlip parent element */
@@ -140,23 +146,24 @@ body.theme-wood {
   border-radius: 12px;
 }
 
-/* Horizontal Centering:
+/* Horizontal Centering & Panning:
    In dual-page mode:
    - When on page 1 (cover), the right half has the cover; translate container left by 25% of spread width to center cover in stage!
    - When on last page (back cover), the left half has the back cover; translate container right by 25% to center back cover!
    - When on open spreads or single page mode, translateX(0) for symmetrical alignment!
+   - Integrated with --pan-x and --pan-y for smooth mouse/touch pan navigation when zoomed in!
 */
 .flipbook-container.book-state-first-page {
-  transform: translateX(-25%);
+  transform: translateX(calc(-25% + var(--pan-x))) translateY(var(--pan-y));
 }
 
 .flipbook-container.book-state-last-page {
-  transform: translateX(25%);
+  transform: translateX(calc(25% + var(--pan-x))) translateY(var(--pan-y));
 }
 
 .flipbook-container.book-state-open,
 .flipbook-container.book-state-single {
-  transform: translateX(0);
+  transform: translateX(var(--pan-x)) translateY(var(--pan-y));
 }
 
 /* Dynamic Window-Style 4-Sided Ambient Book Shadow */
@@ -327,4 +334,157 @@ body.theme-wood .stf__wrapper::before {
   border-radius: 2px;
   position: absolute;
   pointer-events: none;
+}
+
+/* Synex + Aura Hero Animations */
+@keyframes hero-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes hero-screen-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes scroll-pulse {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+.animate-hero-1 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-hero-2 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.animate-hero-3 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-hero-screen-in {
+  animation: hero-fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+  opacity: 0;
+}
+
+.animate-hero-floating {
+  animation: hero-screen-float 6s ease-in-out infinite;
+}
+
+.animate-scroll-indicator {
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+
+/* Dynamic Fluid Moving Aura Lights */
+@keyframes aura-fluid-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(120px, -60px) scale(1.15) rotate(15deg);
+  }
+  66% {
+    transform: translate(-90px, 80px) scale(0.9) rotate(-10deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aura-fluid-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-130px, 70px) scale(1.2) rotate(-20deg);
+  }
+  66% {
+    transform: translate(100px, -50px) scale(0.88) rotate(12deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aura-fluid-3 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(80px, 90px) scale(1.18);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes aura-backlight-pulse {
+  0%, 100% {
+    transform: scale(0.95) translate(0px, 0px);
+    opacity: 0.6;
+    filter: blur(60px);
+  }
+  33% {
+    transform: scale(1.1) translate(30px, -15px);
+    opacity: 0.85;
+    filter: blur(85px);
+  }
+  66% {
+    transform: scale(1.05) translate(-25px, 20px);
+    opacity: 0.75;
+    filter: blur(75px);
+  }
+}
+
+.animate-aura-fluid-1 {
+  animation: aura-fluid-1 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-fluid-2 {
+  animation: aura-fluid-2 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-fluid-3 {
+  animation: aura-fluid-3 14s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-aura-backlight {
+  animation: aura-backlight-pulse 9s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+}
+
+/* Immersive Reading Mode Glass Backdrop */
+.flipbook-immersive-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.6) inset !important;
 }

@@ -4,6 +4,7 @@ import {
   Upload,
   Globe,
   Sliders,
+  Maximize2,
   Code2,
   Check,
   Copy,
@@ -21,11 +22,13 @@ import {
   ListTree,
   Sparkles,
   ChevronRight,
+  ChevronDown,
   Bookmark,
   Search,
   Grid,
   Terminal,
-  Laptop
+  Laptop,
+  Keyboard
 } from 'lucide-react';
 import { PdfFlipbook } from './react/PdfFlipbook';
 
@@ -164,6 +167,31 @@ export function App() {
   const [remoteUrlInput, setRemoteUrlInput] = useState<string>('');
 
   // Configurable Props State (Defaulting to clean Light Aura Theme)
+  
+  // AI Provider & Model Configuration State (Synchronized with localStorage)
+  const [aiProvider, setAiProvider] = useState<'local' | 'gemini' | 'openai'>(() => {
+    return (localStorage.getItem('flipbook_ai_provider') as any) || 'local';
+  });
+  const [aiGeminiKey, setAiGeminiKey] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_gemini_key') || '';
+  });
+  const [aiGeminiModel, setAiGeminiModel] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_gemini_model') || 'gemini-2.5-flash';
+  });
+  const [aiOpenAiKey, setAiOpenAiKey] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_openai_key') || '';
+  });
+  const [aiOpenAiModel, setAiOpenAiModel] = useState<string>(() => {
+    return localStorage.getItem('flipbook_ai_openai_model') || 'gpt-4o-mini';
+  });
+  const [aiSavedNotice, setAiSavedNotice] = useState(false);
+
+  const saveAiSettings = (key: string, val: string) => {
+    localStorage.setItem(key, val);
+    setAiSavedNotice(true);
+    setTimeout(() => setAiSavedNotice(false), 2000);
+  };
+
   const [config, setConfig] = useState({
     theme: 'light' as 'dark' | 'light' | 'wood',
     mode: 'auto' as 'auto' | 'single' | 'double',
@@ -187,7 +215,8 @@ export function App() {
     showThemeToggle: true,
     showViewToggle: true,
     showFileUpload: true,
-    showUrlInput: true
+    showUrlInput: true,
+    doubleClickZoom: true
   });
 
   // Global hidden file input ref
@@ -325,21 +354,21 @@ ${propLines}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         {/* Sunbeam Yellow Luminous Orb */}
         <div
-          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[110px] opacity-75 animate-aura-1"
+          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[110px] opacity-75 animate-aura-fluid-1"
           style={{
             background: 'radial-gradient(circle, rgba(254, 240, 138, 0.85) 0%, rgba(253, 224, 71, 0.35) 40%, rgba(255, 255, 255, 0) 70%)'
           }}
         />
         {/* Sunset Blossom Pink Floating Orb */}
         <div
-          className="absolute top-12 -right-24 w-[650px] h-[500px] rounded-full blur-[100px] opacity-65 animate-aura-2"
+          className="absolute top-12 -right-24 w-[650px] h-[500px] rounded-full blur-[100px] opacity-65 animate-aura-fluid-2"
           style={{
             background: 'radial-gradient(circle, rgba(251, 113, 133, 0.75) 0%, rgba(244, 114, 182, 0.3) 45%, rgba(255, 255, 255, 0) 70%)'
           }}
         />
         {/* Soft Apricot Peach Floating Orb */}
         <div
-          className="absolute top-52 -left-24 w-[600px] h-[500px] rounded-full blur-[100px] opacity-55 animate-aura-1"
+          className="absolute top-52 -left-24 w-[600px] h-[500px] rounded-full blur-[100px] opacity-55 animate-aura-fluid-1"
           style={{
             background: 'radial-gradient(circle, rgba(254, 215, 170, 0.7) 0%, rgba(253, 186, 116, 0.25) 45%, rgba(255, 255, 255, 0) 70%)'
           }}
@@ -399,6 +428,17 @@ ${propLines}
 
           <div className="flex items-center gap-2 sm:gap-2.5">
             <button
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
+              }}
+              title="Keyboard & Gesture Shortcuts (?)"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <Keyboard className="w-3.5 h-3.5 text-slate-600" />
+              <span>Shortcuts</span>
+              <kbd className="text-[10px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono border border-slate-200">?</kbd>
+            </button>
+            <button
               onClick={() => setShowConfigDrawer(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all cursor-pointer shadow-xs active:scale-95"
             >
@@ -428,18 +468,20 @@ ${propLines}
       {/* VIEW: STUDIO VIEWER */}
       {activeView === 'studio' && (
         <main className="relative z-10">
-          {/* Hero Section (Synex Editorial + Aura Premium Infusion) */}
-          <section className="relative px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14 max-w-6xl mx-auto text-center">
-            {/* Top Monospace Tag Capsule */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/80 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider mb-6">
-              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-              <span className="font-semibold text-rose-950 tracking-widest">[ PDF CLIENT REIMAGINED // GPU SIMULATION ]</span>
-              <span className="text-pink-300">/</span>
-              <span className="text-slate-500 font-sans font-medium">Aura Edition v2.1</span>
+          {/* Hero Section (Synex Editorial: ข้อความข้างบน + ภาพหน้าจอข้างล่าง + Animations) */}
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 max-w-[1400px] mx-auto text-center">
+{/* Top App Name Badge */}
+            <div className="animate-hero-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs mb-6">
+              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
+                PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition</span>
             </div>
 
             {/* Headline with Synex Typographic Contrast */}
-            <h1 className="text-4xl sm:text-6xl lg:text-[70px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.03] text-slate-950 mb-4">
+            <h1 className="animate-hero-2 text-4xl sm:text-6xl lg:text-[72px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.02] text-slate-950 mb-4 max-w-4xl mx-auto">
               <span className="block text-slate-400 font-medium tracking-normal text-3xl sm:text-5xl lg:text-[54px] mb-1">
                 A New Standard
               </span>
@@ -448,27 +490,39 @@ ${propLines}
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
-              A high-performance client-side runtime with genuine 60 FPS cubic-bezier peel physics, Web Audio acoustic friction synthesis, full-text search, and on-demand AI document synthesis.
+            <p className="animate-hero-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
+              Transform standard PDF documents into high-performance 3D interactive flipbooks with 60 FPS cubic-bezier peel physics, dynamic Web Audio acoustic paper friction, full-text search, and on-demand AI document synthesis.
             </p>
 
             {/* Quick Action Bar with Aura Glow */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+            <div className="animate-hero-3 flex flex-wrap items-center justify-center gap-3 mb-10">
               <button
-                onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => fileInputRef.current?.click()}
                 className="px-6 py-3 rounded-2xl text-white text-xs font-bold shadow-md shadow-rose-500/25 hover:shadow-lg hover:shadow-rose-500/35 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/30"
               >
-                <BookOpen className="w-4 h-4" />
-                <span>Launch Interactive Studio</span>
-                <ChevronRight className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
+                <span>Upload Local PDF</span>
               </button>
 
               <button
-                onClick={() => setActiveView('docs')}
+                onClick={() => window.dispatchEvent(new CustomEvent('flipbook:toggle-immersive'))}
+                className="px-5 py-3 rounded-2xl text-slate-900 hover:text-black text-xs font-semibold bg-white/90 hover:bg-white border border-rose-300/80 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95 group hover:shadow-md"
+                title="Enlarge flipbook into distraction-free full screen with blurred transparent backdrop (Shortcut: F or I)"
+              >
+                <Maximize2 className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
+                <span>Enter Immersive Mode</span>
+                <kbd className="text-[10px] bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded font-mono text-slate-600">F</kbd>
+              </button>
+
+              <button
+                onClick={() => {
+                  setPdfSource('/demo-document.pdf');
+                  setFileName('demo-document.pdf');
+                }}
                 className="px-5 py-3 rounded-2xl text-slate-800 hover:text-slate-950 text-xs font-semibold bg-white/80 hover:bg-white border border-white/90 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
               >
-                <FileText className="w-4 h-4 text-rose-500" />
-                <span>Developer Manual</span>
+                <BookOpen className="w-4 h-4 text-rose-500" />
+                <span>Reset Demo Book</span>
               </button>
 
               <div
@@ -485,8 +539,129 @@ ${propLines}
               </div>
             </div>
 
-            {/* 3 Bento Cards with Frosted Aura Visual Windows (Synex Style) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12 text-left">
+            {/* ภาพหน้าจอข้างล่าง: Synex Floating Device / Screen Window with 3D Shadow & Glow */}
+            <div id="studio" className="relative mt-4 mb-4 w-full max-w-[1360px] mx-auto animate-hero-screen-in">
+              {/* Backlight Luminous Aura Diffusion Glow */}
+              <div
+                className="absolute -inset-4 sm:-inset-6 rounded-[40px] blur-3xl opacity-60 pointer-events-none -z-10 animate-aura-backlight"
+                style={{
+                  background: 'radial-gradient(ellipse at 50% 50%, rgba(254, 240, 138, 0.45) 0%, rgba(251, 113, 133, 0.35) 45%, rgba(254, 215, 170, 0.25) 75%, transparent 100%)'
+                }}
+              />
+
+              {/* Floating Glass Device Mockup Window */}
+              <div className="relative rounded-2xl sm:rounded-3xl p-1.5 sm:p-2.5 bg-white/75 backdrop-blur-2xl border border-white/90 shadow-[0_30px_90px_-15px_rgba(251,113,133,0.22),0_15px_45px_-10px_rgba(15,23,42,0.1)] transition-all duration-500 hover:shadow-[0_40px_100px_-15px_rgba(251,113,133,0.3)] text-left">
+                {/* macOS / iPad Window Header Chrome */}
+                <div className="h-11 sm:h-13 px-3.5 sm:px-5 rounded-t-xl sm:rounded-t-2xl bg-slate-900/90 text-white backdrop-blur-md flex items-center justify-between text-xs shrink-0 border-b border-white/10">
+                  {/* Traffic Light Dots */}
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block shadow-xs" />
+                    <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block shadow-xs" />
+                    <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block shadow-xs" />
+                    <span className="hidden sm:inline-block text-[11px] font-mono text-slate-400 ml-2">
+                      synex.engine / page-flip-pro
+                    </span>
+                  </div>
+
+                  {/* Window Document Title Pill */}
+                  <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium text-slate-200">
+                    <FileText className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="truncate max-w-[160px] sm:max-w-xs">{fileName}</span>
+                    <span className="hidden md:inline px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded text-[9px] font-mono">
+                      CLIENT SANDBOX
+                    </span>
+                  </div>
+
+                  {/* Right Header Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.dispatchEvent(new CustomEvent('flipbook:toggle-immersive'))}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white rounded text-[11px] font-semibold cursor-pointer border border-white/15 transition-all shadow-xs active:scale-95"
+                      title="Enter Immersive Reading Mode"
+                    >
+                      <Maximize2 className="w-3 h-3 text-rose-400" />
+                      <span className="hidden sm:inline">Immersive</span>
+                    </button>
+                    <button
+                      onClick={handleCopyShareLink}
+                      title="Share Direct Link"
+                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded text-[11px] text-slate-200 cursor-pointer transition-colors"
+                    >
+                      {copiedShareLink ? <Check className="w-3 h-3 text-emerald-400" /> : <Share2 className="w-3 h-3 text-slate-300" />}
+                      <span>{copiedShareLink ? 'Copied' : 'Share'}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowConfigDrawer(true)}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-95 text-white rounded text-[11px] font-semibold cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <Sliders className="w-3 h-3" />
+                      <span className="hidden sm:inline">Configure Props</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Flipbook Stage inside the Screen Mockup */}
+                <div className={`relative w-full ${stageHeightClasses[config.stageHeight]} rounded-b-xl sm:rounded-b-2xl overflow-hidden bg-slate-900/5`}>
+                  <PdfFlipbook
+                    key={flipbookKey}
+                    src={pdfSource}
+                    theme={config.theme}
+                    mode={config.mode}
+                    toolbarPosition={config.toolbarPosition}
+                    toolbarStyle="glass-overlay"
+                    flippingTime={config.flippingTime}
+                    accentColor={config.accentColor}
+                    showLogo={config.showLogo}
+                    showToolbar={config.showToolbar}
+                    doubleClickZoom={config.doubleClickZoom}
+                    showSidebar={config.showSidebar}
+                    showNavigation={config.showNavigation}
+                    showSearch={config.showSearch}
+                    showOutline={config.showOutline}
+                    showBookmarks={config.showBookmarks}
+                    showThumbnails={config.showThumbnails}
+                    showAiSummary={config.showAiSummary}
+                    showZoom={config.showZoom}
+                    showPrint={config.showPrint}
+                    showSound={config.showSound}
+                    showFullscreen={config.showFullscreen}
+                    showThemeToggle={config.showThemeToggle}
+                    showViewToggle={config.showViewToggle}
+                    showFileUpload={config.showFileUpload}
+                    showUrlInput={config.showUrlInput}
+                    onFileSelect={(file) => {
+                      setPdfSource(file);
+                      setFileName(file.name);
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Animated Scroll to Explore Indicator */}
+              <div className="flex flex-col items-center justify-center mt-8 gap-1.5 text-slate-400 animate-scroll-indicator">
+                <span className="text-[11px] font-mono tracking-widest uppercase">Scroll to explore</span>
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Bento Architecture Cards & Source Selector (Scroll down section) */}
+          <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-6xl mx-auto text-left">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+              <div>
+                <span className="font-mono text-xs text-rose-500 font-semibold tracking-wider">[ 01-03 // SYSTEM ARCHITECTURE ]</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 mt-1">
+                  Engineered for Native Experience
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 max-w-md">
+                Every calculation executes locally with zero network hops, giving users instantaneous page flipping and complete privacy.
+              </p>
+            </div>
+
+            {/* 3 Bento Cards with Frosted Aura Visual Windows */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
               {/* Card 01 */}
               <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
                 <div>
@@ -594,177 +769,95 @@ ${propLines}
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* High-End Source Selector Surface */}
-{/* High-End Source Selector Surface */}
-{/* High-End Source Selector Surface */}
-            <div className="max-w-2xl mx-auto bg-white border border-slate-200/90 rounded-2xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] overflow-hidden p-6 text-left">
-              {/* Selector Tabs */}
-              <div className="flex border-b border-slate-200 pb-3 mb-5 gap-6 text-xs font-medium">
-                <button
-                  onClick={() => setInputMode('upload')}
-                  className={`flex items-center gap-2 pb-2 -mb-3.5 border-b-2 transition-all cursor-pointer ${
-                    inputMode === 'upload' ? 'text-slate-900 font-semibold border-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                  style={{ borderColor: inputMode === 'upload' ? config.accentColor : 'transparent' }}
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Upload Local PDF</span>
-                </button>
-                <button
-                  onClick={() => setInputMode('url')}
-                  className={`flex items-center gap-2 pb-2 -mb-3.5 border-b-2 transition-all cursor-pointer ${
-                    inputMode === 'url' ? 'text-slate-900 font-semibold border-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                  style={{ borderColor: inputMode === 'url' ? config.accentColor : 'transparent' }}
-                >
-                  <Globe className="w-4 h-4" />
-                  <span>Load Public URL</span>
-                </button>
-              </div>
-
-              {inputMode === 'upload' ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => {
-                    e.preventDefault();
-                    const f = e.dataTransfer.files?.[0];
-                    if (f) handleFileUpload(f);
-                  }}
-                  className="border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/60 hover:bg-slate-50 rounded-xl p-8 text-center cursor-pointer transition-all group"
-                >
-                  <div
-                    className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center mx-auto mb-3 bg-white shadow-xs group-hover:scale-105 transition-transform"
-                    style={{ color: config.accentColor }}
-                  >
-                    <Upload className="w-5 h-5" />
+              {/* Card 04: Immersive Theater Reading */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-rose-500 tracking-wider">[ 04 ]</span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+                      NEW V2.1
+                    </span>
                   </div>
-                  <h3 className="text-xs font-semibold text-slate-900 mb-1">
-                    Drag and drop your PDF here, or <span className="underline decoration-slate-300">browse local files</span>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    Immersive Theater Mode
                   </h3>
-                  <p className="text-[11px] text-slate-500">
-                    100% Client-Side Parsing • Zero server telemetry • Local documents remain on your device
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Enlarges out from the page container into a full-screen reading theater with real-time frosted glass backdrop (<code className="font-mono text-[11px] text-slate-700">backdrop-blur-3xl</code>) and ambient aura radiance.
                   </p>
                 </div>
-              ) : (
-                <form onSubmit={handleRemoteUrlSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-slate-600 text-xs mb-1 font-medium">Public Remote PDF URL</label>
-                    <div className="relative">
-                      <input
-                        type="url"
-                        required
-                        placeholder="https://example.com/document.pdf"
-                        value={remoteUrlInput}
-                        onChange={e => setRemoteUrlInput(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900 pr-9"
-                      />
-                      <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5" />
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 30% 30%, rgba(244, 63, 94, 0.4) 0%, rgba(168, 85, 247, 0.3) 50%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      HOTKEY: F / I / ESC
+                    </span>
+                    <Maximize2 className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Scale Factor</span>
+                      <span className="font-mono font-bold text-purple-600">Full Viewport (Zero Frame)</span>
                     </div>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                    <span>Try sample documents:</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPdfSource('/demo-document.pdf');
-                        setFileName('demo-document.pdf');
-                        document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700 border border-slate-200 cursor-pointer"
-                    >
-                      Demo Document (Full Outline)
-                    </button>
-                  </div>
-
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="submit"
-                      className="flex items-center gap-1.5 px-4 py-2 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer hover:opacity-95"
-                      style={{ backgroundColor: config.accentColor }}
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      <span>Fetch and Open PDF</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </section>
-
-          {/* Live Studio Viewer Section */}
-          <section id="studio" className="px-4 sm:px-8 lg:px-12 pb-16 max-w-[1440px] mx-auto">
-            <div className={`bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-[0_20px_50px_-20px_rgba(0,0,0,0.08)] flex flex-col ${stageHeightClasses[config.stageHeight]} w-full transition-all duration-300`}>
-              {/* Viewer Top Action Bar */}
-              <div className="h-11 px-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between text-xs text-slate-600 shrink-0">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 shrink-0 text-slate-700" />
-                  <span className="text-slate-900 font-semibold truncate max-w-xs">{fileName}</span>
-                  <span className="hidden sm:inline text-[10px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full font-mono">
-                    Client Sandbox
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleCopyShareLink}
-                    title="Share Direct Flipbook Link"
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 cursor-pointer transition-colors shadow-xs"
-                  >
-                    {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-500" />}
-                    <span className="hidden sm:inline">{copiedShareLink ? 'Link Copied!' : 'Share Link'}</span>
-                  </button>
-
-                  {/* Props Configurator Overlay Trigger */}
-                  <button
-                    onClick={() => setShowConfigDrawer(v => !v)}
-                    className="flex items-center gap-1.5 px-3 py-1 text-white rounded font-medium cursor-pointer transition-colors shadow-xs"
-                    style={{ backgroundColor: config.accentColor }}
-                  >
-                    <Sliders className="w-3.5 h-3.5" />
-                    <span>Configure Props</span>
-                  </button>
                 </div>
               </div>
 
-              {/* Embedded React Component with 100% Height & Min-H-0 */}
-              <div className="flex-1 min-h-0 h-full relative">
-                <PdfFlipbook
-                  key={flipbookKey}
-                  src={pdfSource}
-                  theme={config.theme}
-                  mode={config.mode}
-                  toolbarPosition={config.toolbarPosition}
-                  toolbarStyle="glass-overlay"
-                  flippingTime={config.flippingTime}
-                  accentColor={config.accentColor}
-                  showLogo={config.showLogo}
-                  showToolbar={config.showToolbar}
-                  showSidebar={config.showSidebar}
-                  showNavigation={config.showNavigation}
-                  showSearch={config.showSearch}
-                  showOutline={config.showOutline}
-                  showBookmarks={config.showBookmarks}
-                  showThumbnails={config.showThumbnails}
-                  showAiSummary={config.showAiSummary}
-                  showZoom={config.showZoom}
-                  showPrint={config.showPrint}
-                  showSound={config.showSound}
-                  showFullscreen={config.showFullscreen}
-                  showThemeToggle={config.showThemeToggle}
-                  showViewToggle={config.showViewToggle}
-                  showFileUpload={config.showFileUpload}
-                  showUrlInput={config.showUrlInput}
-                  onFileSelect={(file) => {
-                    setPdfSource(file);
-                    setFileName(file.name);
+              {/* Card 05: Multi-Model AI Synthesis */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between md:col-span-2">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-amber-500 tracking-wider">[ 05 ]</span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      GEMINI • OPENAI • OFFLINE
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    Multi-Model AI Document Intelligence
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Extracts vector glyphs on active spreads and synthesizes instant executive briefings. Switch on the fly between Google Gemini 2.5 Flash, OpenAI GPT-4o, or zero-network browser-native NLP extractive summarization.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 70% 50%, rgba(251, 191, 36, 0.45) 0%, rgba(244, 63, 94, 0.3) 50%, rgba(255, 255, 255, 0.85) 100%)'
                   }}
-                  className="w-full h-full"
-                />
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      PROVIDER HOT-SWAPPING
+                    </span>
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Supported Engines</span>
+                      <span className="font-mono font-bold text-amber-600">Gemini 2.5 Flash / GPT-4o / Local NLP</span>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Editorial Transition Header */}
+            <div className="mt-16 pt-12 border-t border-slate-200/80 text-center max-w-3xl mx-auto">
+              <span className="font-mono text-xs text-rose-500 font-semibold tracking-widest uppercase">
+                [ DEVELOPER INTEGRATION // ZERO OVERHEAD ]
+              </span>
+              <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950 mt-2 mb-3">
+                Drop-in Component. Infinite Customization.
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
+                Embed realistic 3D flipbook capabilities into any React, Next.js, or vanilla web application with a single tag and type-safe props.
+              </p>
             </div>
           </section>
 
@@ -855,6 +948,8 @@ ${propLines}
             <a href="#features-guide" className="hover:text-slate-900 underline decoration-slate-300">4. Key Features</a>
             <span className="text-slate-300">•</span>
             <a href="#keyboard" className="hover:text-slate-900 underline decoration-slate-300">5. Keyboard & Gestures</a>
+            <span className="text-slate-300">•</span>
+            <a href="#ai-guide" className="hover:text-slate-900 font-semibold text-rose-600 underline decoration-rose-300">6. AI Model Setup Guide</a>
           </div>
 
           {/* Section 1: Quick Start */}
@@ -1082,29 +1177,176 @@ export default function PdfReaderPage() {
             </div>
           </section>
 
-          {/* Section 5: Keyboard Shortcuts & Gestures */}
+          {/* Section 5: Keyboard Shortcuts & Interaction */}
           <section id="keyboard" className="mb-14 scroll-mt-20">
             <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-xs">5</span>
-              Keyboard Shortcuts & Interaction
+              Complete Keyboard Shortcuts & Physical Gestures
             </h2>
-            <div className="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-xs">
+            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
               <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100 text-xs text-center">
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">←</kbd> / <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">→</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">Turn Page</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">←</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">→</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Space</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Flip Previous / Next Page</p>
                 </div>
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Home</kbd> / <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">End</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">First / Last Page</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">F</kbd>
+                    <span className="text-slate-400">/</span>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">I</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Toggle Immersive Theater Mode</p>
                 </div>
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">F</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">Toggle Fullscreen</p>
+                  <kbd className="px-2 py-1 bg-rose-50 border border-rose-300 text-rose-700 rounded font-mono text-[11px] font-bold">ESC</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Exit Immersive / Close Modals</p>
                 </div>
                 <div className="p-4">
-                  <span className="font-semibold text-slate-800">Touch Drag</span>
-                  <p className="mt-2 text-slate-600 font-medium">Realistic Page Curl</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Home</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">End</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Jump to First / Last Page</p>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">+</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">-</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">0</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Zoom In / Zoom Out / Reset</p>
+                </div>
+                <div className="p-4">
+                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">M</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Mute / Unmute Paper Audio</p>
+                </div>
+                <div className="p-4">
+                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">S</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Toggle Navigation Sidebar</p>
+                </div>
+                <div className="p-4">
+                  <span className="font-semibold text-slate-800">Touch / Swipe</span>
+                  <p className="mt-2 text-slate-600 font-medium">Natural 3D Page Peel Physics</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+                    {/* Section 6: AI Model Configuration Guide */}
+          <section id="ai-guide" className="mb-14 scroll-mt-20">
+            <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-md bg-gradient-to-r from-rose-500 to-amber-500 text-white flex items-center justify-center text-xs font-bold">6</span>
+              AI Model Configuration & Document Synthesis Guide
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+              PDF HTML5 Page Flip Pro includes a high-performance client-side document intelligence layer capable of synthesizing active page content and multi-page chapters. You can run 100% offline or connect directly to frontier LLMs.
+            </p>
+
+            {/* Provider Comparison Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {/* Local / Offline */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    DEFAULT • 100% PRIVATE
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">Browser-Native Extractive NLP</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Uses high-frequency sentence scoring and TF-IDF extraction inside the client sandbox. Zero network calls, zero API key required, zero latency.
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Completely Free<br />
+                  <span className="font-semibold text-slate-800">Setup:</span> 0 seconds (Out-of-the-box)
+                </div>
+              </div>
+
+              {/* Google Gemini */}
+              <div className="bg-white border border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-rose-400/20 to-amber-400/20 rounded-bl-full pointer-events-none" />
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-semibold mb-3">
+                    <Sparkles className="w-3 h-3 text-rose-500" />
+                    RECOMMENDED
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">Google Gemini API</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Sub-second generative document synthesis with deep reasoning. Supports <code className="font-mono text-slate-700 font-semibold">gemini-2.5-flash</code>, <code className="font-mono text-slate-700">gemini-2.0-flash</code>, and <code className="font-mono text-slate-700">gemini-1.5-pro</code>.
+                  </p>
+                </div>
+                <div className="bg-rose-50/50 rounded-xl p-3 border border-rose-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Free Tier available<br />
+                  <span className="font-semibold text-slate-800">Key:</span> <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-rose-600 font-semibold underline">Get free key at Google AI Studio ↗</a>
+                </div>
+              </div>
+
+              {/* OpenAI ChatGPT */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-semibold mb-3">
+                    OPENAI ENGINE
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">OpenAI ChatGPT</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Industry standard LLM synthesis. Supports cost-efficient <code className="font-mono text-slate-700 font-semibold">gpt-4o-mini</code> and comprehensive <code className="font-mono text-slate-700">gpt-4o</code>.
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Pay-per-token API<br />
+                  <span className="font-semibold text-slate-800">Key:</span> <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-indigo-600 font-semibold underline">OpenAI Platform ↗</a>
+                </div>
+              </div>
+            </div>
+
+            {/* How to Configure Instructions */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+              <h3 className="text-base font-bold text-slate-900">How to Configure in Your Application</h3>
+
+              <div className="space-y-4 text-xs text-slate-600">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Via Interactive UI (Zero Code)</h4>
+                    <p className="leading-relaxed">
+                      Click the <span className="font-semibold text-slate-800">Configure Props</span> button in the top navigation or click the ⚙️ gear icon in the <span className="font-semibold text-rose-600">AI Summary</span> modal. Select your preferred provider (Offline, Gemini, or OpenAI), choose a model, and paste your API key. Settings are automatically persisted in client <code className="font-mono text-slate-800 bg-slate-100 px-1 py-0.5 rounded">localStorage</code>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 w-full min-w-0">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Via Programmatic Pre-Configuration</h4>
+                    <p className="leading-relaxed mb-3">
+                      To pre-configure your company or user's API credentials programmatically without requiring manual user input, set the synchronized localStorage keys prior to component mount:
+                    </p>
+                    <div className="w-full max-w-full overflow-hidden rounded-xl bg-slate-950 p-4 border border-slate-800 shadow-inner">
+                      <pre className="text-slate-200 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words block">{`// 1. Pre-configure Google Gemini 2.5 Flash (Recommended)
+localStorage.setItem('flipbook_ai_provider', 'gemini');
+localStorage.setItem('flipbook_ai_gemini_model', 'gemini-2.5-flash');
+localStorage.setItem('flipbook_ai_gemini_key', process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+
+// 2. Or pre-configure OpenAI ChatGPT (gpt-4o-mini)
+localStorage.setItem('flipbook_ai_provider', 'openai');
+localStorage.setItem('flipbook_ai_openai_model', 'gpt-4o-mini');
+localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_API_KEY || '');`}</pre>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Direct Client Privacy Protocol</h4>
+                    <p className="leading-relaxed">
+                      All LLM synthesis calls execute <span className="font-semibold text-slate-900">directly from the client browser via HTTPS</span> to Google AI or OpenAI endpoints. No intermediary servers, proxies, or analytics telemetry are used.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1166,7 +1408,155 @@ export default function PdfReaderPage() {
               </div>
             </div>
 
-            {/* Toolbar Position Selector */}
+                        {/* AI Assistant Model & Provider Configuration */}
+            <div className="mb-5 border-b border-slate-200 pb-5">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-slate-800 text-[11px] font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                  <span>AI Model & Provider</span>
+                </label>
+                <span className="text-[10px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  {aiSavedNotice ? 'Saved!' : 'Ready'}
+                </span>
+              </div>
+
+              {/* Provider Selection (Tabs) */}
+              <div className="grid grid-cols-3 gap-1 mb-3">
+                {[
+                  { id: 'local', name: 'Offline', desc: 'Free & Private' },
+                  { id: 'gemini', name: 'Gemini', desc: 'Google AI' },
+                  { id: 'openai', name: 'OpenAI', desc: 'ChatGPT' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setAiProvider(p.id as any);
+                      saveAiSettings('flipbook_ai_provider', p.id);
+                    }}
+                    className={`py-1.5 px-2 rounded-lg font-semibold cursor-pointer text-center text-[11px] border transition-all ${
+                      aiProvider === p.id
+                        ? 'bg-rose-500 text-white border-rose-600 shadow-xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <div>{p.name}</div>
+                    <div className={`text-[9px] ${aiProvider === p.id ? 'text-rose-100' : 'text-slate-400'}`}>{p.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Gemini Provider Config */}
+              {aiProvider === 'gemini' && (
+                <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-700">Model:</span>
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-rose-600 font-medium hover:underline"
+                    >
+                      Get Free Gemini Key ↗
+                    </a>
+                  </div>
+                  <select
+                    value={aiGeminiModel}
+                    onChange={e => {
+                      setAiGeminiModel(e.target.value);
+                      saveAiSettings('flipbook_ai_gemini_model', e.target.value);
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-rose-500"
+                  >
+                    <option value="gemini-2.5-flash">gemini-2.5-flash (Fast & Powerful)</option>
+                    <option value="gemini-2.0-flash">gemini-2.0-flash (Sub-second)</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro (Deep reasoning)</option>
+                  </select>
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">Google AI API Key</label>
+                    <input
+                      type="password"
+                      placeholder="AIzaSy..."
+                      value={aiGeminiKey}
+                      onChange={e => {
+                        setAiGeminiKey(e.target.value);
+                        saveAiSettings('flipbook_ai_gemini_key', e.target.value);
+                      }}
+                      className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono placeholder-slate-400 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* OpenAI Provider Config */}
+              {aiProvider === 'openai' && (
+                <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-700">Model:</span>
+                    <a
+                      href="https://platform.openai.com/api-keys"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-rose-600 font-medium hover:underline"
+                    >
+                      Get OpenAI Key ↗
+                    </a>
+                  </div>
+                  <select
+                    value={aiOpenAiModel}
+                    onChange={e => {
+                      setAiOpenAiModel(e.target.value);
+                      saveAiSettings('flipbook_ai_openai_model', e.target.value);
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-rose-500"
+                  >
+                    <option value="gpt-4o-mini">gpt-4o-mini (Cost-efficient)</option>
+                    <option value="gpt-4o">gpt-4o (High intelligence)</option>
+                  </select>
+                  <div>
+                    <label className="text-[10px] text-slate-500 block mb-1">OpenAI API Key</label>
+                    <input
+                      type="password"
+                      placeholder="sk-..."
+                      value={aiOpenAiKey}
+                      onChange={e => {
+                        setAiOpenAiKey(e.target.value);
+                        saveAiSettings('flipbook_ai_openai_key', e.target.value);
+                      }}
+                      className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono placeholder-slate-400 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Local Provider Note */}
+              {aiProvider === 'local' && (
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">100% Free & Offline:</span> Uses browser-native extractive NLP summarization with zero network calls and zero API key needed.
+                </div>
+              )}
+            </div>
+
+              {/* Double Click / Tap to Zoom Toggle */}
+              <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Double Click / Tap to Zoom</span>
+                  <span className="text-[10px] text-slate-400">Quickly toggle zoom (160% / 100%) on paper</span>
+                </div>
+                <button
+                  onClick={() => setConfig(c => ({ ...c, doubleClickZoom: !c.doubleClickZoom }))}
+                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                    config.doubleClickZoom ? 'bg-rose-500' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
+                      config.doubleClickZoom ? 'left-6' : 'left-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+{/* Toolbar Position Selector */}
             <div className="mb-5 border-b border-slate-200 pb-5">
               <label className="block text-slate-600 text-[11px] font-semibold mb-1.5">Toolbar Floating Placement</label>
               <div className="grid grid-cols-2 gap-1.5">
