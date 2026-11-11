@@ -144,10 +144,10 @@ export function App() {
   };
 
   const stageHeightClasses = {
-    compact: 'min-h-[580px] h-[580px]',
-    medium: 'min-h-[720px] h-[720px]',
-    large: 'min-h-[860px] h-[860px]',
-    viewport: 'min-h-[calc(100vh-100px)] h-[calc(100vh-100px)]'
+    compact: 'h-[480px] sm:h-[540px] md:h-[580px]',
+    medium: 'h-[520px] sm:h-[620px] md:h-[720px]',
+    large: 'h-[600px] sm:h-[720px] md:h-[860px]',
+    viewport: 'h-[calc(100vh-140px)] md:h-[calc(100vh-100px)]'
   };
 
   const accentPresets = [
@@ -225,7 +225,7 @@ ${propLines}
       />
 
       {/* Top Navigation Bar */}
-      <nav className="h-16 border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-6 lg:px-12">
+      <nav className="h-16 border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-3 sm:px-6 lg:px-12 gap-2">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs transition-colors"

@@ -153,7 +153,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   // State
   const [currentTheme, setCurrentTheme] = useState<'dark' | 'light' | 'wood'>(theme);
   const [activeTab, setActiveTab] = useState<'outline' | 'search' | 'bookmarks' | 'thumbs'>('outline');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 1024 : true));
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInputVal, setPageInputVal] = useState('1');
   const [totalPages, setTotalPages] = useState(0);
@@ -373,16 +373,19 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
     const stage = mountWrapperRef.current;
     const isFs = typeof document !== 'undefined' && Boolean(document.fullscreenElement);
-    const availH = Math.max(340, (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 30));
-    const availW = Math.max(300, (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 30));
+    const availH = Math.max(260, (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 20));
+    const availW = Math.max(260, (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 16));
     const pageAspect = baseDimRef.current.width / baseDimRef.current.height;
+
+    // Automatically adapt to single page portrait on narrow mobile screens (< 560px)
+    const effectiveDoublePage = isDoublePage && availW >= 560;
 
     let bW: number;
     let bH: number;
 
-    if (isDoublePage) {
+    if (effectiveDoublePage) {
       // Fit 2 pages side-by-side
-      const maxW = Math.floor((availW - (isFs ? 50 : 40)) / 2);
+      const maxW = Math.floor((availW - (isFs ? 50 : 36)) / 2);
       const maxH = availH - (isFs ? 30 : 20);
       if (maxW / pageAspect <= maxH) {
         bW = maxW;
@@ -393,8 +396,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       }
     } else {
       // Fit single page
-      const maxW = availW - (isFs ? 50 : 40);
-      const maxH = availH - (isFs ? 30 : 20);
+      const maxW = availW - (isFs ? 40 : 16);
+      const maxH = availH - (isFs ? 30 : 16);
       if (maxW / pageAspect <= maxH) {
         bW = maxW;
         bH = Math.floor(bW / pageAspect);
@@ -420,7 +423,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         swipeDistance: 30,
         drawShadow: true,
         showCover: true,
-        usePortrait: !isDoublePage,
+        usePortrait: !effectiveDoublePage,
         flippingTime: flippingTime || 750
       });
 
@@ -930,14 +933,14 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     >
       {/* Top Glassmorphism Toolbar */}
       {showToolbar && (
-        <header className={`h-14 border-b flex items-center justify-between px-3 md:px-5 z-40 shrink-0 transition-colors ${
+        <header className={`h-14 border-b flex items-center justify-between px-2 sm:px-3 md:px-5 z-40 shrink-0 transition-colors overflow-x-auto scrollbar-none gap-2 whitespace-nowrap ${
           isLight
             ? 'bg-white/95 border-slate-200 text-slate-800 shadow-xs'
             : isWood
             ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100'
             : 'bg-slate-900/95 border-slate-800 text-slate-200'
         }`}>
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0 whitespace-nowrap">
             {showSidebar && (
               <button
                 onClick={() => {
@@ -956,7 +959,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
             {showLogo && (
               <div className={`flex items-center gap-2 border-r pr-3 mr-1 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
                 <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
-                <span className={`font-semibold text-sm md:text-base tracking-tight hidden sm:inline ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                <span className={`font-semibold text-sm md:text-base tracking-tight hidden md:inline ${isLight ? 'text-slate-900' : 'text-white'}`}>
                   Page Flip <span className="font-bold" style={{ color: accentColor }}>Pro</span>
                 </span>
               </div>
@@ -1011,12 +1014,12 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
           {/* Navigation Controls */}
           {showNavigation && (
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0 whitespace-nowrap">
               <button
                 disabled={currentPage <= 1}
                 onClick={() => handleTurnToPage(1)}
                 title="First page"
-                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                className={`hidden sm:inline-flex p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
                   isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
                 }`}
               >
@@ -1076,7 +1079,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                 disabled={currentPage >= totalPages}
                 onClick={() => handleTurnToPage(totalPages)}
                 title="Last page"
-                className={`p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
+                className={`hidden sm:inline-flex p-1.5 rounded-md transition-colors disabled:opacity-30 cursor-pointer ${
                   isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
                 }`}
               >
@@ -1086,7 +1089,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
           )}
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 whitespace-nowrap">
             {showBookmarks && (
               <button
                 onClick={handleToggleBookmark}
@@ -1218,6 +1221,15 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
       {/* Main Section */}
       <div className="flex-1 flex overflow-hidden relative h-full min-h-0">
+        {/* Mobile Backdrop for Sidebar */}
+        {showSidebar && isSidebarOpen && (
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-20 md:hidden transition-opacity"
+            aria-hidden="true"
+          />
+        )}
+
         {/* Collapsible Sidebar */}
         {showSidebar && (
           <aside
@@ -1289,6 +1301,14 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
                   <span>Thumbs</span>
                 </button>
               )}
+              {/* Mobile Close Sidebar Button */}
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="md:hidden px-2.5 py-3 text-slate-400 hover:text-slate-800 transition-colors"
+                title="Close Sidebar"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Pane Contents */}

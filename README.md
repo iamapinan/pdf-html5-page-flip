@@ -7,6 +7,12 @@
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4.x-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-flipbook.apps.gracer.ai-emerald?logo=googlechrome)](https://flipbook.apps.gracer.ai)
 
+<p align="center">
+  <a href="https://flipbook.apps.gracer.ai" target="_blank" rel="noopener noreferrer">
+    <img src="./screenshot.png" alt="PDF HTML5 Page Flip Pro Preview" width="100%" style="max-width: 920px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);" />
+  </a>
+</p>
+
 A modern, high-performance, client-side 3D Web Application and React Component that converts standard PDF files into realistic, hardware-accelerated HTML5 flipbooks with physics-based page turning, memory virtualization, full-text search, customizable branding, and on-demand AI document summarization.
 
 Live Production Website: [https://flipbook.apps.gracer.ai](https://flipbook.apps.gracer.ai) (or [https://pdf-flip.apps.gracer.ai](https://pdf-flip.apps.gracer.ai))
