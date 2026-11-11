@@ -1,0 +1,44 @@
+# PDF HTML5 Page Flip Pro
+
+> A high-performance, client-side 3D HTML5 flipbook web application and React component for PDF documents.
+
+## Project Summary
+- Repository: https://github.com/iamapinan/pdf-html5-page-flip
+- Demo: https://flipbook.apps.gracer.ai
+- License: Apache-2.0
+- Author: Apinan Worawichitsilp (@iamapinan)
+
+## Key Technical Specifications
+- 100% Client-Side Privacy: Decodes & renders PDF binary streams directly in-browser using Mozilla PDF.js & Web Workers.
+- 60 FPS 3D Page Peel Physics: Realistic page turning simulation with cubic-bezier easing and responsive single/double page layout.
+- Synthesized Web Audio: Dynamically synthesizes paper friction audio without external audio files.
+- Full-Text Search & Native PDF Outlines: In-memory inverted index and extracted PDF bookmarks.
+- On-Demand AI Document Summaries: Active viewport text extraction with client-side summarization.
+- React Component: `<PdfFlipbook src="/document.pdf" ... />`
+
+## Quick Start
+```bash
+npm install @iamapinan/pdf-html5-page-flip
+```
+
+```tsx
+import { PdfFlipbook } from '@iamapinan/pdf-html5-page-flip/react';
+import '@iamapinan/pdf-html5-page-flip/style.css';
+
+export default function DocumentViewer() {
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <PdfFlipbook
+        src="/sample.pdf"
+        accentColor="#f43f5e"
+        enableSound={true}
+        enableAiSummary={true}
+        onPageChange={(current, total) => console.log(`Page ${current} of ${total}`)}
+      />
+    </div>
+  );
+}
+```
+
+## Detailed Documentation
+- Full Documentation: https://flipbook.apps.gracer.ai/llms-full.txt

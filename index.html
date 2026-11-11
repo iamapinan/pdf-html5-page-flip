@@ -1,12 +1,146 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF HTML5 Page Flip Pro - 3D Client-Side Flipbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <!-- Primary Meta Tags -->
+  <title>PDF HTML5 Page Flip Pro - Client-Side 3D Flipbook React Component & Viewer</title>
+  <meta name="title" content="PDF HTML5 Page Flip Pro - Client-Side 3D Flipbook React Component & Viewer" />
+  <meta name="description" content="Open-source client-side HTML5 & React PDF flipbook engine with realistic 3D page curl physics, Web Audio paper sound, full-text search, and on-demand AI document summary." />
+  <meta name="keywords" content="pdf flipbook, html5 flipbook, react flipbook, pdf.js 3d viewer, client side pdf flipbook, page curl effect, web audio paper sound, page-flip component, pdf viewer react" />
+  <meta name="author" content="Apinan Worawichitsilp (@iamapinan)" />
+  <meta name="creator" content="Apinan Worawichitsilp" />
+  <meta name="publisher" content="iamapinan" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://flipbook.apps.gracer.ai/" />
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" type="image/png" href="/cover.png" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="theme-color" content="#ffffff" />
+
+  <!-- Open Graph / Facebook / LinkedIn -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://flipbook.apps.gracer.ai/" />
+  <meta property="og:title" content="PDF HTML5 Page Flip Pro - Client-Side 3D Flipbook Engine" />
+  <meta property="og:description" content="Transform PDF files into ultra-realistic 3D pages with hardware-accelerated canvas physics, natural multi-layer paper friction audio, AI document summaries, and Apple liquid glass controls." />
+  <meta property="og:image" content="https://flipbook.apps.gracer.ai/cover.png" />
+  <meta property="og:image:secure_url" content="https://flipbook.apps.gracer.ai/cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="PDF HTML5 Page Flip Pro Interactive Preview" />
+  <meta property="og:site_name" content="PDF HTML5 Page Flip Pro" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@iamapinan" />
+  <meta name="twitter:creator" content="@iamapinan" />
+  <meta name="twitter:url" content="https://flipbook.apps.gracer.ai/" />
+  <meta name="twitter:title" content="PDF HTML5 Page Flip Pro - Client-Side 3D Flipbook Engine" />
+  <meta name="twitter:description" content="Client-side 3D flipbook React component with realistic page-peel physics, Web Audio friction sound, and local privacy." />
+  <meta name="twitter:image" content="https://flipbook.apps.gracer.ai/cover.png" />
+  <meta name="twitter:image:alt" content="PDF HTML5 Page Flip Pro Banner Preview" />
+
+  <!-- Preconnect for Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- JSON-LD: Structured Data for SEO, GEO & AEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://flipbook.apps.gracer.ai/#website",
+        "url": "https://flipbook.apps.gracer.ai/",
+        "name": "PDF HTML5 Page Flip Pro",
+        "description": "Client-side 3D HTML5 flipbook web application and React component for PDF documents.",
+        "publisher": {
+          "@type": "Person",
+          "name": "Apinan Worawichitsilp",
+          "url": "https://github.com/iamapinan"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://flipbook.apps.gracer.ai/#software",
+        "name": "PDF HTML5 Page Flip Pro",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser (Chrome, Firefox, Safari, Edge)",
+        "url": "https://flipbook.apps.gracer.ai/",
+        "downloadUrl": "https://github.com/iamapinan/pdf-html5-page-flip",
+        "softwareVersion": "2.1.0",
+        "license": "https://opensource.org/licenses/Apache-2.0",
+        "author": {
+          "@type": "Person",
+          "name": "Apinan Worawichitsilp",
+          "url": "https://github.com/iamapinan"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "100% Client-Side Privacy (PDF.js + Web Workers)",
+          "60 FPS Realistic 3D Paper Peel Simulation",
+          "Dynamic Web Audio Paper Friction Sound Synthesis",
+          "HiDPI & Retina Dynamic Canvas Resolution",
+          "Full-Text Document Search & Native Bookmark Navigation",
+          "On-Demand AI Document Summarization",
+          "Apple Liquid Glass Floating Responsive Toolbar",
+          "Drop-in React Component & Vanilla Web Component"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://flipbook.apps.gracer.ai/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is PDF HTML5 Page Flip Pro?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PDF HTML5 Page Flip Pro is an open-source, client-side web application and React component that transforms standard PDF files into interactive 3D flipbooks with realistic page-peel physics, Web Audio paper friction sound, full-text search, and on-demand AI document summarization."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does PDF HTML5 Page Flip Pro upload confidential documents to external servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All parsing and rendering execute entirely within the local browser runtime using Mozilla PDF.js and Web Workers. Confidential documents never leave the user's device or touch external servers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I install and use PDF HTML5 Page Flip in a React or Next.js project?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can install the package using npm i @iamapinan/pdf-html5-page-flip, import { PdfFlipbook } from '@iamapinan/pdf-html5-page-flip/react', and import '@iamapinan/pdf-html5-page-flip/style.css'. The component accepts a src prop for local or remote PDFs."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it support mobile and touch devices?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. PDF HTML5 Page Flip Pro features native touch and swipe gestures, responsive single-page and double-page mode switching, and automatic Retina/HiDPI viewport scaling."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <link rel="stylesheet" href="/src/style.css" />
 </head>
-<body class="h-full bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden">
+<body class="h-full bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden selection:bg-rose-500 selection:text-white">
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

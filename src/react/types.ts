@@ -11,8 +11,12 @@ export interface PdfFlipbookProps {
   accentColor?: string;
   /** Show brand logo in toolbar (default: true) */
   showLogo?: boolean;
-  /** Show top glassmorphism toolbar (default: true) */
+  /** Show glassmorphism toolbar (default: true) */
   showToolbar?: boolean;
+  /** Toolbar placement: 'top' | 'bottom' (default: 'top') */
+  toolbarPosition?: 'top' | 'bottom';
+  /** Toolbar design style: 'glass-overlay' | 'inline' (default: 'glass-overlay') */
+  toolbarStyle?: 'glass-overlay' | 'inline';
   /** Show collapsible left sidebar (default: true) */
   showSidebar?: boolean;
   /** Show page navigation controls (default: true) */

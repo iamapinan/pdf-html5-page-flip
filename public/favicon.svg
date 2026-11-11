@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="leftPage" x1="14" y1="16" x2="32" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="rightPage" x1="32" y1="16" x2="50" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="curlAccent" x1="32" y1="14" x2="50" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <!-- Squircle Base -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" stroke="rgba(255,255,255,0.12)" stroke-width="1" fill="none"/>
+  
+  <!-- Left Page -->
+  <path d="M14 20C22 18 29 20 32 23V47C29 44 22 42 14 44V20Z" fill="url(#leftPage)"/>
+  
+  <!-- Right Page -->
+  <path d="M50 20C42 18 35 20 32 23V47C35 44 42 42 50 44V20Z" fill="url(#rightPage)"/>
+  
+  <!-- Curved Spine Center Fold -->
+  <path d="M32 23V47" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Radiant Top Curl Accent -->
+  <path d="M32 22C36 19 44 17 50 18" stroke="url(#curlAccent)" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
