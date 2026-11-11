@@ -4,6 +4,7 @@ import {
   Upload,
   Globe,
   Sliders,
+  Maximize2,
   Code2,
   Check,
   Copy,
@@ -550,6 +551,14 @@ ${propLines}
 
                   {/* Right Header Actions */}
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.dispatchEvent(new CustomEvent('flipbook:toggle-immersive'))}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white rounded text-[11px] font-semibold cursor-pointer border border-white/15 transition-all shadow-xs active:scale-95"
+                      title="Enter Immersive Reading Mode"
+                    >
+                      <Maximize2 className="w-3 h-3 text-rose-400" />
+                      <span className="hidden sm:inline">Immersive</span>
+                    </button>
                     <button
                       onClick={handleCopyShareLink}
                       title="Share Direct Link"

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PageFlip } from 'page-flip';
@@ -14,6 +15,7 @@ import {
   ZoomOut,
   ZoomIn,
   Maximize2,
+  Minimize2,
   Columns2,
   Sparkles,
   Printer,
@@ -145,6 +147,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   showFileUpload = true,
   showUrlInput = true,
   flippingTime = 800,
+  immersive: propImmersive,
+  onImmersiveChange,
   className = '',
   height = '100%',
   width = '100%',
@@ -167,6 +171,43 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   const [loadingText, setLoadingText] = useState('Loading PDF...');
   const [loadingProgress, setLoadingProgress] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Immersive Mode State & Handlers
+  const [internalImmersive, setInternalImmersive] = useState(false);
+  const isImmersive = propImmersive !== undefined ? propImmersive : internalImmersive;
+
+  const toggleImmersive = useCallback((val?: boolean) => {
+    const next = val !== undefined ? val : !isImmersive;
+    if (propImmersive === undefined) {
+      setInternalImmersive(next);
+    }
+    if (next) {
+      setIsSidebarOpen(false);
+    }
+    onImmersiveChange?.(next);
+  }, [isImmersive, propImmersive, onImmersiveChange]);
+
+  // Listen for global custom event
+  useEffect(() => {
+    const handleCustomToggle = () => toggleImmersive();
+    window.addEventListener('flipbook:toggle-immersive', handleCustomToggle);
+    return () => window.removeEventListener('flipbook:toggle-immersive', handleCustomToggle);
+  }, [toggleImmersive]);
+
+  // Esc key exits immersive
+  useEffect(() => {
+    if (!isImmersive) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        toggleImmersive(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isImmersive, toggleImmersive]);
+
+
+
 
   // AI Assistant State
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -441,8 +482,9 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
     const stage = mountWrapperRef.current;
     const isFs = typeof document !== 'undefined' && Boolean(document.fullscreenElement);
-    const availH = Math.max(260, (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 20));
-    const availW = Math.max(260, (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 16));
+    const isExpanded = isImmersive || isFs;
+    const availH = Math.max(260, (isImmersive ? window.innerHeight - 100 : (stage.clientHeight || (isFs ? window.innerHeight - 60 : 640)) - (isFs ? 40 : 20)));
+    const availW = Math.max(260, (isImmersive ? window.innerWidth - 60 : (stage.clientWidth || (isFs ? window.innerWidth : 800)) - (isFs ? 40 : 16)));
     const pageAspect = baseDimRef.current.width / baseDimRef.current.height;
 
     // Automatically adapt to single page portrait on narrow mobile screens (< 560px)
@@ -539,7 +581,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     } catch (err) {
       console.error('Failed to init PageFlip instance:', err);
     }
-  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, updateBookStateClass, onPageChange]);
+  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, updateBookStateClass, onPageChange, isImmersive]);
 
   // Load PDF Document with Remote CORS Fallback
   const loadPdfDocument = useCallback(async (source: string | File | ArrayBuffer, isRetry = false) => {
@@ -655,7 +697,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     if (!isLoading && totalPages > 0) {
       initFlipInstance();
     }
-  }, [isLoading, totalPages, isDoublePage, zoomLevel, initFlipInstance]);
+  }, [isLoading, totalPages, isDoublePage, zoomLevel, isImmersive, initFlipInstance]);
 
   // Debounced window resize handler
   useEffect(() => {
@@ -1301,11 +1343,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
             {showFullscreen && (
               <button
-                onClick={() => {
-                  if (!document.fullscreenElement) containerRef.current?.requestFullscreen();
-                  else document.exitFullscreen();
-                }}
-                title="Toggle Fullscreen"
+                onClick={() => toggleImmersive()}
+                title={isImmersive ? "Exit Immersive Mode (Esc)" : "Enter Immersive Mode"}
                 className={`p-2 rounded-lg transition-colors cursor-pointer ${
                   isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
                 }`}
@@ -1318,12 +1357,37 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       </header>
   );
 
-  return (
+  const bookContent = (
     <div
       ref={containerRef}
-      className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
-      style={{ height, width, ['--flip-accent' as any]: accentColor }}
+      className={`font-sans select-none overflow-hidden transition-all duration-500 ease-out ${
+        isImmersive
+          ? 'flipbook-immersive-active fixed inset-0 z-[100] w-screen h-screen flex flex-col justify-between p-2 sm:p-5'
+          : `relative flex flex-col transition-colors duration-300 h-full w-full ${themeClass} ${className}`
+      }`}
+      style={{
+        height: isImmersive ? '100vh' : height,
+        width: isImmersive ? '100vw' : width,
+        ['--flip-accent' as any]: accentColor
+      }}
     >
+      {/* Immersive Floating Banner */}
+      {isImmersive && (
+        <div className="absolute top-3 sm:top-5 right-3 sm:right-6 z-50 flex items-center gap-2 animate-in fade-in slide-in-from-top-3 duration-300 pointer-events-auto">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/15 text-[11px] text-slate-200 font-medium shadow-lg">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Immersive Reading Mode</span>
+          </div>
+          <button
+            onClick={() => toggleImmersive(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/25 shadow-2xl text-xs font-semibold cursor-pointer transition-all hover:scale-105 active:scale-95"
+            title="Exit Immersive Mode (Esc)"
+          >
+            <Minimize2 className="w-3.5 h-3.5 text-rose-300" />
+            <span>Exit Immersive <kbd className="ml-1 text-[10px] bg-black/40 border border-white/20 px-1.5 py-0.5 rounded font-mono">ESC</kbd></span>
+          </button>
+        </div>
+      )}
       {/* Top Dedicated Toolbar Slot (Never overlaps book) */}
       {showToolbar && toolbarPosition === 'top' && (
         <div className={`shrink-0 flex items-center justify-center w-full z-30 ${toolbarStyle === 'glass-overlay' ? 'px-2 sm:px-4 pt-2 sm:pt-3 pb-1' : ''}`}>
@@ -1834,4 +1898,10 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       )}
     </div>
   );
+
+  if (isImmersive && typeof document !== 'undefined') {
+    return createPortal(bookContent, document.body);
+  }
+
+  return bookContent;
 };

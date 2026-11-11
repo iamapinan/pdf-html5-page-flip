@@ -468,3 +468,16 @@ body.theme-wood .stf__wrapper::before {
   animation: aura-backlight-pulse 9s ease-in-out infinite;
   will-change: transform, opacity, filter;
 }
+
+/* Immersive Reading Mode Glass Backdrop */
+.flipbook-immersive-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 100 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  backdrop-filter: blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.6) inset !important;
+}

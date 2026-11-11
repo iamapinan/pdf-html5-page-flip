@@ -1,6 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
 export interface PdfFlipbookProps {
+  /** Enable immersive mode (expands full screen with blurred transparent background) */
+  immersive?: boolean;
+  /** Callback fired when immersive mode changes */
+  onImmersiveChange?: (isImmersive: boolean) => void;
   /** PDF source: URL string, File object, or ArrayBuffer */
   src: string | File | ArrayBuffer;
   /** Background theme: 'dark' | 'light' | 'wood' */
