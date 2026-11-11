@@ -335,6 +335,72 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
   }, []);
 
+  // Dynamically update book state classes and CSS variables for seamless shadows
+  const updateBookStateClass = useCallback((page: number, total: number, doublePage: boolean) => {
+    if (!bookContainerRef.current) return;
+    const container = bookContainerRef.current;
+    container.classList.remove('book-state-first-page', 'book-state-last-page', 'book-state-open', 'book-state-single');
+
+    const stageW = mountWrapperRef.current?.clientWidth || 800;
+    const effectiveDouble = doublePage && stageW >= 560;
+
+    // Sync book rect geometry for pixel-perfect vertical and horizontal alignment
+    const pf = pageFlipRef.current;
+    if (pf) {
+      try {
+        const rect = (pf as any).getRender()?.getRect();
+        if (rect) {
+          container.style.setProperty('--book-top', `${rect.top}px`);
+          container.style.setProperty('--book-height', `${rect.height}px`);
+          container.style.setProperty('--book-page-width', `${rect.pageWidth}px`);
+          container.style.setProperty('--book-full-width', `${rect.width}px`);
+        }
+      } catch (_) {}
+    }
+
+    if (!effectiveDouble || total <= 1) {
+      container.classList.add('book-state-single');
+      return;
+    }
+
+    // Inspect spread configuration from PageFlip if available
+    if (pf && typeof (pf as any).getPageCollection === 'function') {
+      try {
+        const pageCol = (pf as any).getPageCollection();
+        const spread = pageCol.getSpread();
+        const spreadIdx = pageCol.getCurrentSpreadIndex();
+        if (spread && spread[spreadIdx]) {
+          const curSpread = spread[spreadIdx];
+          if (curSpread.length === 1) {
+            if (curSpread[0] === 0) {
+              container.classList.add('book-state-first-page');
+              return;
+            } else {
+              container.classList.add('book-state-last-page');
+              return;
+            }
+          } else if (curSpread.length > 1) {
+            container.classList.add('book-state-open');
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Fallback if PageFlip instance is still initialising
+    if (page <= 1) {
+      container.classList.add('book-state-first-page');
+    } else if (page >= total) {
+      if (total % 2 === 0) {
+        container.classList.add('book-state-last-page');
+      } else {
+        container.classList.add('book-state-open');
+      }
+    } else {
+      container.classList.add('book-state-open');
+    }
+  }, []);
+
   // Initialize PageFlip instance
   const initFlipInstance = useCallback(async () => {
     if (!mountWrapperRef.current || !pdfDocRef.current || totalPages === 0) return;
@@ -437,6 +503,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         setPageInputVal(String(p));
         if (showSound) soundManager.playPageFlip();
         triggerLazyRender(p, totalPages);
+        updateBookStateClass(p, totalPages, effectiveDoublePage);
         onPageChange?.(p, totalPages);
       });
 
@@ -450,11 +517,12 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         } catch (_) {}
       }
 
+      updateBookStateClass(target, totalPages, effectiveDoublePage);
       await triggerLazyRender(target, totalPages);
     } catch (err) {
       console.error('Failed to init PageFlip instance:', err);
     }
-  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, onPageChange]);
+  }, [totalPages, isDoublePage, zoomLevel, flippingTime, showSound, triggerLazyRender, updateBookStateClass, onPageChange]);
 
   // Load PDF Document with Remote CORS Fallback
   const loadPdfDocument = useCallback(async (source: string | File | ArrayBuffer, isRetry = false) => {
@@ -560,6 +628,11 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     }
   }, [src, loadPdfDocument]);
 
+  // Keep book state class and shadow geometry synchronized
+  useEffect(() => {
+    updateBookStateClass(currentPage, totalPages, isDoublePage);
+  }, [currentPage, totalPages, isDoublePage, updateBookStateClass]);
+
   // Flipbook re-init on dimensions/layout change
   useEffect(() => {
     if (!isLoading && totalPages > 0) {
@@ -610,9 +683,22 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   }, [isLoading, totalPages, initFlipInstance]);
 
   // Navigation handlers
+  // Horizontal scroll handler for toolbar with mouse wheel
+  const handleToolbarWheel = (e: React.WheelEvent<HTMLElement>) => {
+    if (e.deltaY !== 0 && e.currentTarget) {
+      e.currentTarget.scrollLeft += e.deltaY;
+    }
+  };
+
   const handleTurnToPage = (p: number) => {
     if (p >= 1 && p <= totalPages && pageFlipRef.current) {
       pageFlipRef.current.turnToPage(p - 1);
+      currentPageRef.current = p;
+      setCurrentPage(p);
+      setPageInputVal(String(p));
+      triggerLazyRender(p, totalPages);
+      updateBookStateClass(p, totalPages, isDoublePage);
+      onPageChange?.(p, totalPages);
     }
   };
 
@@ -931,15 +1017,20 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
       style={{ height, width, ['--flip-accent' as any]: accentColor }}
     >
-      {/* Top Glassmorphism Toolbar */}
+      {/* Top Glassmorphism Toolbar with horizontal scroll */}
       {showToolbar && (
-        <header className={`h-14 border-b flex items-center justify-between px-2 sm:px-3 md:px-5 z-40 shrink-0 transition-colors overflow-x-auto scrollbar-none gap-2 whitespace-nowrap ${
-          isLight
-            ? 'bg-white/95 border-slate-200 text-slate-800 shadow-xs'
-            : isWood
-            ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100'
-            : 'bg-slate-900/95 border-slate-800 text-slate-200'
-        }`}>
+        <header
+          onWheel={handleToolbarWheel}
+          className={`h-14 border-b px-2 sm:px-3 md:px-5 z-40 shrink-0 transition-colors overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-none whitespace-nowrap ${
+            isLight
+              ? 'bg-white/95 border-slate-200 text-slate-800 shadow-xs'
+              : isWood
+              ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100'
+              : 'bg-slate-900/95 border-slate-800 text-slate-200'
+          }`}
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="flex items-center justify-between gap-3 h-full w-full min-w-max">
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0 whitespace-nowrap">
             {showSidebar && (
               <button
@@ -1216,7 +1307,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               </button>
             )}
           </div>
-        </header>
+        </div>
+      </header>
       )}
 
       {/* Main Section */}
