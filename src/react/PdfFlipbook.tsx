@@ -127,6 +127,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   accentColor = '#6366f1',
   showLogo = true,
   showToolbar = true,
+  toolbarPosition = 'top',
+  toolbarStyle = 'glass-overlay',
   showSidebar = true,
   showNavigation = true,
   showSearch = true,
@@ -495,6 +497,15 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
 
       const pageElements = container.querySelectorAll<HTMLElement>('.page');
       pf.loadFromHTML(pageElements);
+
+      // Enforce smooth soft paper peel animation for all pages including first page cover
+      try {
+        const pages = (pf as any).getPageCollection()?.getPages() || [];
+        pages.forEach((p: any) => {
+          if (typeof p.setDensity === 'function') p.setDensity('soft');
+          if (typeof p.setDrawingDensity === 'function') p.setDrawingDensity('soft');
+        });
+      } catch (_) {}
 
       pf.on('flip', (e: any) => {
         const p = (e.data as number) + 1;
@@ -1017,20 +1028,23 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       className={`relative flex flex-col font-sans select-none overflow-hidden transition-colors duration-300 h-full w-full ${themeClass} ${className}`}
       style={{ height, width, ['--flip-accent' as any]: accentColor }}
     >
-      {/* Top Glassmorphism Toolbar with horizontal scroll */}
+      {/* Apple Liquid Glass Toolbar with configurable top/bottom floating overlay */}
       {showToolbar && (
         <header
           onWheel={handleToolbarWheel}
-          className={`h-14 border-b px-2 sm:px-3 md:px-5 z-40 shrink-0 transition-colors overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-none whitespace-nowrap ${
-            isLight
-              ? 'bg-white/95 border-slate-200 text-slate-800 shadow-xs'
-              : isWood
-              ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100'
-              : 'bg-slate-900/95 border-slate-800 text-slate-200'
-          }`}
+          className={`${
+            toolbarStyle === 'glass-overlay'
+              ? (toolbarPosition === 'bottom'
+                  ? 'absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-40 max-w-[96%] w-fit h-13 rounded-2xl px-2.5 sm:px-4 py-1.5'
+                  : 'absolute top-3 sm:top-4 inset-x-0 mx-auto z-40 max-w-[96%] w-fit h-13 rounded-2xl px-2.5 sm:px-4 py-1.5') +
+                ' ' +
+                (isLight ? 'liquid-glass-light text-slate-800' : isWood ? 'liquid-glass-wood text-amber-100' : 'liquid-glass-dark text-slate-100')
+              : 'h-14 border-b flex items-center px-2 sm:px-3 md:px-5 z-40 shrink-0 ' +
+                (isLight ? 'bg-white/95 border-slate-200 text-slate-800' : isWood ? 'bg-[#281a12]/95 border-amber-900/40 text-amber-100' : 'bg-slate-900/95 border-slate-800 text-slate-200')
+          } transition-all duration-300 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-none whitespace-nowrap`}
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="flex items-center justify-between gap-3 h-full w-full min-w-max">
+          <div className="flex items-center justify-between gap-2.5 sm:gap-3.5 h-full w-full min-w-max">
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0 whitespace-nowrap">
             {showSidebar && (
               <button
@@ -1236,19 +1250,15 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               </button>
             )}
 
-            {/* Anti-slop AI Summary Button */}
+            {/* Aura Gradient AI Summary Button */}
             {showAiSummary && (
               <button
                 onClick={handleAiSummary}
                 title="AI Document Summary"
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer shadow-xs transition-all ${
-                  isLight
-                    ? 'bg-slate-900 hover:bg-slate-800 text-white'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-300 text-white bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-pink-400 shadow-sm hover:shadow-md hover:shadow-fuchsia-500/25 active:scale-95 border border-white/25 select-none shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5" style={{ color: isLight ? '#93c5fd' : '#a5b4fc' }} />
-                <span className="hidden lg:inline">AI Summary</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-200 fill-amber-200/40 animate-pulse" />
+                <span className="inline tracking-wide font-medium">AI Summary</span>
               </button>
             )}
 

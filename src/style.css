@@ -25,6 +25,86 @@
   scrollbar-width: none;
 }
 
+/* Aura Premium Keyframe Animations */
+@keyframes aura-mesh-float-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(35px, -25px) scale(1.08);
+  }
+  66% {
+    transform: translate(-25px, 20px) scale(0.95);
+  }
+}
+
+@keyframes aura-mesh-float-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-30px, 30px) scale(1.1);
+  }
+  66% {
+    transform: translate(20px, -15px) scale(0.94);
+  }
+}
+
+@keyframes aura-shimmer-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-aura-1 {
+  animation: aura-mesh-float-1 20s ease-in-out infinite;
+}
+
+.animate-aura-2 {
+  animation: aura-mesh-float-2 24s ease-in-out infinite;
+}
+
+.animate-aura-shimmer {
+  background-size: 200% 200%;
+  animation: aura-shimmer-sweep 6s ease infinite;
+}
+
+/* Apple Liquid Glass Effect */
+.liquid-glass-light {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.1),
+              0 2px 8px rgba(15, 23, 42, 0.04),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.liquid-glass-dark {
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.55),
+              0 4px 12px rgba(0, 0, 0, 0.3),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.liquid-glass-wood {
+  background: rgba(40, 26, 18, 0.8);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  box-shadow: 0 20px 48px -10px rgba(15, 5, 0, 0.65),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 /* Themes */
 body.theme-dark {
   background: radial-gradient(circle at 50% 30%, #1e293b 0%, #0f172a 60%, #020617 100%);
@@ -32,7 +112,7 @@ body.theme-dark {
 }
 
 body.theme-light {
-  background: radial-gradient(circle at 50% 30%, #f8fafc 0%, #e2e8f0 60%, #cbd5e1 100%);
+  background: radial-gradient(circle at 50% 25%, #ffffff 0%, #fffbf0 45%, #fff1f2 85%, #fdf2f8 100%);
   color: #0f172a;
 }
 

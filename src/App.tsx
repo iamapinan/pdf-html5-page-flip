@@ -29,6 +29,116 @@ import {
 } from 'lucide-react';
 import { PdfFlipbook } from './react/PdfFlipbook';
 
+// High-contrast, crystal-clear syntax-highlighted code editor preview
+const CodeViewer: React.FC<{ code: string }> = ({ code }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const renderTokens = (line: string, lineIdx: number) => {
+    if (!line.trim()) {
+      return (
+        <div key={lineIdx} className="table-row leading-relaxed">
+          <span className="table-cell pr-4 text-right select-none text-slate-600 font-mono text-[11px] w-8">
+            {lineIdx + 1}
+          </span>
+          <span className="table-cell font-mono text-slate-200">&nbsp;</span>
+        </div>
+      );
+    }
+
+    if (line.trim().startsWith('//')) {
+      return (
+        <div key={lineIdx} className="table-row leading-relaxed">
+          <span className="table-cell pr-4 text-right select-none text-slate-600 font-mono text-[11px] w-8">
+            {lineIdx + 1}
+          </span>
+          <span className="table-cell font-mono text-slate-500 italic">{line}</span>
+        </div>
+      );
+    }
+
+    const tokens: React.ReactNode[] = [];
+    const regex = /(\b(?:import|from|export|default|function|return|const|let)\b)|(<[\/]?[A-Za-z0-9_]+)|([A-Za-z0-9_\-]+(?==))|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|([{}()[\]\],;=<>])/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        tokens.push(
+          <span key={`txt-${lineIdx}-${lastIndex}`} className="text-slate-200">
+            {line.slice(lastIndex, match.index)}
+          </span>
+        );
+      }
+      const [full, keyword, tag, prop, str, punct] = match;
+      if (keyword) {
+        tokens.push(<span key={`kw-${lineIdx}-${match.index}`} className="text-pink-400 font-semibold">{keyword}</span>);
+      } else if (tag) {
+        tokens.push(<span key={`tag-${lineIdx}-${match.index}`} className="text-sky-300 font-bold">{tag}</span>);
+      } else if (prop) {
+        tokens.push(<span key={`prop-${lineIdx}-${match.index}`} className="text-amber-300 font-medium">{prop}</span>);
+      } else if (str) {
+        tokens.push(<span key={`str-${lineIdx}-${match.index}`} className="text-emerald-300">{str}</span>);
+      } else if (punct) {
+        tokens.push(<span key={`punct-${lineIdx}-${match.index}`} className="text-slate-300">{punct}</span>);
+      }
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < line.length) {
+      tokens.push(
+        <span key={`tail-${lineIdx}-${lastIndex}`} className="text-slate-200">
+          {line.slice(lastIndex)}
+        </span>
+      );
+    }
+
+    return (
+      <div key={lineIdx} className="table-row leading-relaxed hover:bg-white/5 transition-colors">
+        <span className="table-cell pr-4 text-right select-none text-slate-600 font-mono text-[11px] w-8">
+          {lineIdx + 1}
+        </span>
+        <span className="table-cell font-mono text-slate-200 whitespace-pre">
+          {tokens}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-800/90 bg-[#080d1a] shadow-2xl overflow-hidden select-text">
+      {/* Mac-Style Window Header */}
+      <div className="px-4 py-3 bg-[#0d1527] border-b border-slate-800/80 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block shadow-xs" />
+          </div>
+          <span className="text-xs font-mono font-medium text-slate-300 ml-2">App.tsx</span>
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-all cursor-pointer shadow-xs active:scale-95"
+        >
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-300" />}
+          <span>{copied ? 'Copied' : 'Copy JSX'}</span>
+        </button>
+      </div>
+      <div className="p-4 sm:p-5 overflow-x-auto text-xs font-mono font-normal bg-[#070b16]">
+        <div className="table w-full">
+          {code.split('\n').map((line, idx) => renderTokens(line, idx))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function App() {
   // Navigation View: 'studio' | 'docs'
   const [activeView, setActiveView] = useState<'studio' | 'docs'>('studio');
@@ -52,6 +162,7 @@ export function App() {
     theme: 'light' as 'dark' | 'light' | 'wood',
     mode: 'auto' as 'auto' | 'single' | 'double',
     flippingTime: 800,
+    toolbarPosition: 'top' as 'top' | 'bottom',
     stageHeight: 'medium' as 'compact' | 'medium' | 'large' | 'viewport',
     accentColor: '#0f172a',
     showLogo: true,
@@ -164,6 +275,7 @@ export function App() {
       `  src="${typeof pdfSource === 'string' ? pdfSource : fileName}"`,
       config.theme !== 'light' ? `  theme="${config.theme}"` : null,
       config.mode !== 'auto' ? `  mode="${config.mode}"` : null,
+      config.toolbarPosition !== 'top' ? `  toolbarPosition="${config.toolbarPosition}"` : null,
       config.flippingTime !== 800 ? `  flippingTime={${config.flippingTime}}` : null,
       config.accentColor !== '#0f172a' ? `  accentColor="${config.accentColor}"` : null,
       !config.showLogo ? `  showLogo={false}` : null,
@@ -203,13 +315,30 @@ ${propLines}
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-slate-900 selection:text-white relative">
-      {/* Luminous Aura Background Diffusion */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-70"
-        style={{
-          background: 'radial-gradient(1200px 600px at 50% -20px, rgba(99, 102, 241, 0.08), rgba(248, 250, 252, 0) 70%)'
-        }}
-      />
+      {/* Luminous Aura Background Diffusion (Sunbeam Yellow, Petal Pink, Crisp White) */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        {/* Sunbeam Yellow Luminous Orb */}
+        <div
+          className="absolute -top-36 left-1/2 -translate-x-1/2 w-[850px] h-[550px] rounded-full blur-[110px] opacity-75 animate-aura-1"
+          style={{
+            background: 'radial-gradient(circle, rgba(254, 240, 138, 0.85) 0%, rgba(253, 224, 71, 0.35) 40%, rgba(255, 255, 255, 0) 70%)'
+          }}
+        />
+        {/* Sunset Blossom Pink Floating Orb */}
+        <div
+          className="absolute top-12 -right-24 w-[650px] h-[500px] rounded-full blur-[100px] opacity-65 animate-aura-2"
+          style={{
+            background: 'radial-gradient(circle, rgba(251, 113, 133, 0.75) 0%, rgba(244, 114, 182, 0.3) 45%, rgba(255, 255, 255, 0) 70%)'
+          }}
+        />
+        {/* Soft Apricot Peach Floating Orb */}
+        <div
+          className="absolute top-52 -left-24 w-[600px] h-[500px] rounded-full blur-[100px] opacity-55 animate-aura-1"
+          style={{
+            background: 'radial-gradient(circle, rgba(254, 215, 170, 0.7) 0%, rgba(253, 186, 116, 0.25) 45%, rgba(255, 255, 255, 0) 70%)'
+          }}
+        />
+      </div>
 
       {/* Global Hidden File Input */}
       <input
@@ -224,125 +353,126 @@ ${propLines}
         }}
       />
 
-      {/* Top Navigation Bar */}
-      <nav className="h-16 border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-3 sm:px-6 lg:px-12 gap-2">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-xs transition-colors"
-            style={{ backgroundColor: config.accentColor }}
-          >
-            <BookOpen className="w-4 h-4" />
+      {/* Floating Apple Liquid Glass Top Navigation Bar */}
+      <header className="sticky top-3 z-50 px-3 sm:px-6 max-w-5xl mx-auto">
+        <nav className="h-14 sm:h-15 liquid-glass-light rounded-2xl flex items-center justify-between px-3 sm:px-5 gap-2 transition-all duration-300">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-xs transition-transform duration-300 hover:scale-105 bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400"
+            >
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <span className="font-bold text-base tracking-tight text-slate-900">
+              Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500">Pro</span>
+            </span>
           </div>
-          <span className="font-semibold text-base tracking-tight text-slate-900">
-            Page Flip <span style={{ color: config.accentColor === '#0f172a' ? '#334155' : config.accentColor }}>Pro</span>
-          </span>
-        </div>
 
-        {/* View Switcher Tabs */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/80 text-xs font-semibold">
-          <button
-            onClick={() => setActiveView('studio')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeView === 'studio'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Studio Viewer
-          </button>
-          <button
-            onClick={() => setActiveView('docs')}
-            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-              activeView === 'docs'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Documentation & Guide
-          </button>
-        </div>
+          {/* View Switcher Tabs (Liquid Glass Capsule) */}
+          <div className="flex items-center gap-1 bg-black/5 p-1 rounded-xl text-xs font-semibold backdrop-blur-md border border-white/60">
+            <button
+              onClick={() => setActiveView('studio')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeView === 'studio'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-950'
+              }`}
+            >
+              Studio Viewer
+            </button>
+            <button
+              onClick={() => setActiveView('docs')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeView === 'docs'
+                  ? 'bg-white text-slate-950 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-950'
+              }`}
+            >
+              Documentation & Guide
+            </button>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowConfigDrawer(true)}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all cursor-pointer shadow-xs"
-          >
-            <Sliders className="w-3.5 h-3.5 text-slate-500" />
-            <span>Configurator</span>
-          </button>
-          <a
-            href="https://github.com/iamapinan/pdf-html5-page-flip"
-            target="_blank"
-            rel="noreferrer"
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all"
-          >
-            <span>GitHub</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-          </a>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-3.5 py-1.5 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer hover:opacity-95"
-            style={{ backgroundColor: config.accentColor }}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Upload PDF</span>
-          </button>
-        </div>
-      </nav>
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => setShowConfigDrawer(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <Sliders className="w-3.5 h-3.5 text-rose-500" />
+              <span className="hidden sm:inline">Configurator</span>
+            </button>
+            <a
+              href="https://github.com/iamapinan/pdf-html5-page-flip"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all shadow-xs"
+            >
+              <span>GitHub</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-white rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer hover:opacity-95 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/25"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Upload PDF</span>
+            </button>
+          </div>
+        </nav>
+      </header>
 
       {/* VIEW: STUDIO VIEWER */}
       {activeView === 'studio' && (
         <main className="relative z-10">
-          {/* Hero Section (Aura Premium Anti-Slop Redesign) */}
-          <section className="relative px-6 pt-12 pb-10 lg:pt-16 lg:pb-14 max-w-5xl mx-auto text-center">
-            {/* Architectural Status Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-white shadow-xs text-slate-700 text-xs font-medium mb-6">
-              <span className="w-2 h-2 rounded-full inline-block bg-emerald-500" />
-              <span>Version 2.1.0 • Full PDF Outlines & Vector Print Engine</span>
+          {/* Hero Section (Aura Premium Redesign) */}
+          <section className="relative px-6 pt-10 pb-8 sm:pt-14 sm:pb-12 max-w-5xl mx-auto text-center">
+            {/* Luminous Shimmering Status Pill */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs text-slate-800 text-xs font-medium mb-6">
+              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+              <span className="font-semibold text-rose-900">Aura Edition 2.1</span>
+              <span className="text-slate-300">•</span>
+              <span>Smooth Soft Flip • Liquid Glass Floating Toolbar • Full Outlines</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 mb-4 leading-[1.15]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 mb-4 leading-[1.12]">
               The HTML5 PDF Flipbook Engine <br />
-              <span className="text-slate-600 font-medium">Built for True Native Performance</span>
+              <span className="bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
+                Engineered for Physical Paper Elegance
+              </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
-              Transform any PDF into realistic 3D paper pages with 60 FPS hardware acceleration, instant table of contents outline navigation, vector document printing, and dynamic fullscreen scaling.
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
+              Transform PDF files into ultra-realistic 3D pages with hardware-accelerated canvas physics, natural multi-layer paper friction audio, AI document summaries, and Apple liquid glass controls.
             </p>
 
-            {/* Quick Action Bar */}
+            {/* Quick Action Bar with Aura Glow */}
             <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
               <button
                 onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-5 py-2.5 rounded-xl text-white text-xs font-semibold shadow-xs hover:opacity-95 transition-all cursor-pointer flex items-center gap-2"
-                style={{ backgroundColor: config.accentColor }}
+                className="px-6 py-3 rounded-2xl text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/25"
               >
-                <span>Launch Studio Viewer</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <BookOpen className="w-4 h-4" />
+                <span>Launch Interactive Studio</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
 
               <button
                 onClick={() => setActiveView('docs')}
-                className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                className="px-5 py-3 rounded-2xl text-slate-800 hover:text-slate-950 text-xs font-semibold bg-white/80 hover:bg-white border border-white/80 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
               >
-                Read Developer Manual
+                <FileText className="w-4 h-4 text-rose-500" />
+                <span>Read Developer Manual</span>
               </button>
 
-              {/* Install Terminal Snippet */}
-              <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-xs text-xs font-mono text-slate-700">
-                <Terminal className="w-3.5 h-3.5 text-slate-400 mr-2" />
-                <span className="select-all">npm i @iamapinan/pdf-html5-page-flip</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
-                    setCopiedInstall(true);
-                    setTimeout(() => setCopiedInstall(false), 2000);
-                  }}
-                  className="ml-2.5 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
-                  title="Copy install command"
-                >
-                  {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
+              <div
+                onClick={() => {
+                  navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
+                  setCopiedInstall(true);
+                  setTimeout(() => setCopiedInstall(false), 2000);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-mono bg-white/70 hover:bg-white border border-slate-200/80 text-slate-700 cursor-pointer shadow-xs transition-all active:scale-95"
+              >
+                <span className="text-rose-500 font-bold">&gt;_</span>
+                <span>npm i @iamapinan/pdf-html5-page-flip</span>
+                {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
               </div>
             </div>
 
@@ -485,6 +615,8 @@ ${propLines}
                   src={pdfSource}
                   theme={config.theme}
                   mode={config.mode}
+                  toolbarPosition={config.toolbarPosition}
+                  toolbarStyle="glass-overlay"
                   flippingTime={config.flippingTime}
                   accentColor={config.accentColor}
                   showLogo={config.showLogo}
@@ -514,30 +646,16 @@ ${propLines}
             </div>
           </section>
 
-          {/* Quick React Integration Snippet */}
+          {/* Quick React Integration Snippet (High-Contrast Aura Syntax Viewer) */}
           <section id="code" className="px-6 lg:px-12 py-10 max-w-5xl mx-auto">
-            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
-              <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Code2 className="w-4 h-4 text-slate-700" />
-                  <span className="text-xs font-semibold text-slate-900">React Component Props Implementation</span>
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(generateReactCode());
-                    setCopiedCode(true);
-                    setTimeout(() => setCopiedCode(false), 2000);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs text-slate-700 cursor-pointer transition-colors shadow-xs"
-                >
-                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedCode ? 'Copied' : 'Copy JSX'}</span>
-                </button>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-rose-500" />
+                <h3 className="text-sm font-bold text-slate-900">React Component Props Implementation</h3>
               </div>
-              <pre className="p-5 text-xs text-slate-800 font-mono bg-slate-950 text-slate-200 overflow-x-auto leading-relaxed select-text">
-                {generateReactCode()}
-              </pre>
+              <span className="text-xs font-mono text-slate-500">Live Config Synchronized</span>
             </div>
+            <CodeViewer code={generateReactCode()} />
           </section>
 
           {/* Performance Highlights Bento */}
@@ -923,6 +1041,28 @@ export default function PdfReaderPage() {
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+            </div>
+
+            {/* Toolbar Position Selector */}
+            <div className="mb-5 border-b border-slate-200 pb-5">
+              <label className="block text-slate-600 text-[11px] font-semibold mb-1.5">Toolbar Floating Placement</label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { key: 'top', label: 'Floating Top Overlay' },
+                  { key: 'bottom', label: 'Floating Bottom Dock' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setConfig(c => ({ ...c, toolbarPosition: key as any }))}
+                    className={`py-1.5 px-2 rounded-lg font-medium cursor-pointer transition-colors text-center border ${
+                      config.toolbarPosition === key ? 'text-white border-transparent' : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
+                    }`}
+                    style={{ backgroundColor: config.toolbarPosition === key ? config.accentColor : undefined }}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 
