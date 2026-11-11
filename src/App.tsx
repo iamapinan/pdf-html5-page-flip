@@ -21,6 +21,7 @@ import {
   ListTree,
   Sparkles,
   ChevronRight,
+  ChevronDown,
   Bookmark,
   Search,
   Grid,
@@ -428,18 +429,18 @@ ${propLines}
       {/* VIEW: STUDIO VIEWER */}
       {activeView === 'studio' && (
         <main className="relative z-10">
-          {/* Hero Section (Synex Editorial + Aura Premium Infusion) */}
-          <section className="relative px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14 max-w-6xl mx-auto text-center">
+          {/* Hero Section (Synex Editorial: ข้อความข้างบน + ภาพหน้าจอข้างล่าง + Animations) */}
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 max-w-[1400px] mx-auto text-center">
             {/* Top Monospace Tag Capsule */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/80 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider mb-6">
+            <div className="animate-hero-1 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/80 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider mb-6">
               <span className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-              <span className="font-semibold text-rose-950 tracking-widest">[ PDF CLIENT REIMAGINED // GPU SIMULATION ]</span>
+              <span className="font-semibold text-rose-950 tracking-widest">[ DOCUMENT INTELLIGENCE REIMAGINED // 60 FPS GPU ENGINE ]</span>
               <span className="text-pink-300">/</span>
               <span className="text-slate-500 font-sans font-medium">Aura Edition v2.1</span>
             </div>
 
             {/* Headline with Synex Typographic Contrast */}
-            <h1 className="text-4xl sm:text-6xl lg:text-[70px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.03] text-slate-950 mb-4">
+            <h1 className="animate-hero-2 text-4xl sm:text-6xl lg:text-[72px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.02] text-slate-950 mb-4 max-w-4xl mx-auto">
               <span className="block text-slate-400 font-medium tracking-normal text-3xl sm:text-5xl lg:text-[54px] mb-1">
                 A New Standard
               </span>
@@ -448,27 +449,29 @@ ${propLines}
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
-              A high-performance client-side runtime with genuine 60 FPS cubic-bezier peel physics, Web Audio acoustic friction synthesis, full-text search, and on-demand AI document synthesis.
+            <p className="animate-hero-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
+              Transform standard PDF documents into high-performance 3D interactive flipbooks with 60 FPS cubic-bezier peel physics, dynamic Web Audio acoustic paper friction, full-text search, and on-demand AI document synthesis.
             </p>
 
             {/* Quick Action Bar with Aura Glow */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+            <div className="animate-hero-3 flex flex-wrap items-center justify-center gap-3 mb-10">
               <button
-                onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => fileInputRef.current?.click()}
                 className="px-6 py-3 rounded-2xl text-white text-xs font-bold shadow-md shadow-rose-500/25 hover:shadow-lg hover:shadow-rose-500/35 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/30"
               >
-                <BookOpen className="w-4 h-4" />
-                <span>Launch Interactive Studio</span>
-                <ChevronRight className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
+                <span>Upload Local PDF</span>
               </button>
 
               <button
-                onClick={() => setActiveView('docs')}
+                onClick={() => {
+                  setPdfSource('/demo-document.pdf');
+                  setFileName('demo-document.pdf');
+                }}
                 className="px-5 py-3 rounded-2xl text-slate-800 hover:text-slate-950 text-xs font-semibold bg-white/80 hover:bg-white border border-white/90 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
               >
-                <FileText className="w-4 h-4 text-rose-500" />
-                <span>Developer Manual</span>
+                <BookOpen className="w-4 h-4 text-rose-500" />
+                <span>Reset Demo Book</span>
               </button>
 
               <div
@@ -485,8 +488,120 @@ ${propLines}
               </div>
             </div>
 
-            {/* 3 Bento Cards with Frosted Aura Visual Windows (Synex Style) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12 text-left">
+            {/* ภาพหน้าจอข้างล่าง: Synex Floating Device / Screen Window with 3D Shadow & Glow */}
+            <div id="studio" className="relative mt-4 mb-4 w-full max-w-[1360px] mx-auto animate-hero-screen-in">
+              {/* Backlight Luminous Aura Diffusion Glow */}
+              <div
+                className="absolute -inset-4 sm:-inset-6 rounded-[40px] blur-3xl opacity-60 pointer-events-none -z-10 animate-aura-shimmer"
+                style={{
+                  background: 'radial-gradient(ellipse at 50% 50%, rgba(254, 240, 138, 0.45) 0%, rgba(251, 113, 133, 0.35) 45%, rgba(254, 215, 170, 0.25) 75%, transparent 100%)'
+                }}
+              />
+
+              {/* Floating Glass Device Mockup Window */}
+              <div className="relative rounded-2xl sm:rounded-3xl p-1.5 sm:p-2.5 bg-white/75 backdrop-blur-2xl border border-white/90 shadow-[0_30px_90px_-15px_rgba(251,113,133,0.22),0_15px_45px_-10px_rgba(15,23,42,0.1)] transition-all duration-500 hover:shadow-[0_40px_100px_-15px_rgba(251,113,133,0.3)] text-left">
+                {/* macOS / iPad Window Header Chrome */}
+                <div className="h-11 sm:h-13 px-3.5 sm:px-5 rounded-t-xl sm:rounded-t-2xl bg-slate-900/90 text-white backdrop-blur-md flex items-center justify-between text-xs shrink-0 border-b border-white/10">
+                  {/* Traffic Light Dots */}
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-[#ff5f56] inline-block shadow-xs" />
+                    <span className="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block shadow-xs" />
+                    <span className="w-3 h-3 rounded-full bg-[#27c93f] inline-block shadow-xs" />
+                    <span className="hidden sm:inline-block text-[11px] font-mono text-slate-400 ml-2">
+                      synex.engine / page-flip-pro
+                    </span>
+                  </div>
+
+                  {/* Window Document Title Pill */}
+                  <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium text-slate-200">
+                    <FileText className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="truncate max-w-[160px] sm:max-w-xs">{fileName}</span>
+                    <span className="hidden md:inline px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded text-[9px] font-mono">
+                      CLIENT SANDBOX
+                    </span>
+                  </div>
+
+                  {/* Right Header Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCopyShareLink}
+                      title="Share Direct Link"
+                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 border border-white/15 rounded text-[11px] text-slate-200 cursor-pointer transition-colors"
+                    >
+                      {copiedShareLink ? <Check className="w-3 h-3 text-emerald-400" /> : <Share2 className="w-3 h-3 text-slate-300" />}
+                      <span>{copiedShareLink ? 'Copied' : 'Share'}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowConfigDrawer(true)}
+                      className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-95 text-white rounded text-[11px] font-semibold cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <Sliders className="w-3 h-3" />
+                      <span className="hidden sm:inline">Configure Props</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Flipbook Stage inside the Screen Mockup */}
+                <div className={`relative w-full ${stageHeightClasses[config.stageHeight]} rounded-b-xl sm:rounded-b-2xl overflow-hidden bg-slate-900/5`}>
+                  <PdfFlipbook
+                    key={flipbookKey}
+                    src={pdfSource}
+                    theme={config.theme}
+                    mode={config.mode}
+                    toolbarPosition={config.toolbarPosition}
+                    toolbarStyle="glass-overlay"
+                    flippingTime={config.flippingTime}
+                    accentColor={config.accentColor}
+                    showLogo={config.showLogo}
+                    showToolbar={config.showToolbar}
+                    showSidebar={config.showSidebar}
+                    showNavigation={config.showNavigation}
+                    showSearch={config.showSearch}
+                    showOutline={config.showOutline}
+                    showBookmarks={config.showBookmarks}
+                    showThumbnails={config.showThumbnails}
+                    showAiSummary={config.showAiSummary}
+                    showZoom={config.showZoom}
+                    showPrint={config.showPrint}
+                    showSound={config.showSound}
+                    showFullscreen={config.showFullscreen}
+                    showThemeToggle={config.showThemeToggle}
+                    showViewToggle={config.showViewToggle}
+                    showFileUpload={config.showFileUpload}
+                    showUrlInput={config.showUrlInput}
+                    onFileSelect={(file) => {
+                      setPdfSource(file);
+                      setFileName(file.name);
+                    }}
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+
+              {/* Animated Scroll to Explore Indicator */}
+              <div className="flex flex-col items-center justify-center mt-8 gap-1.5 text-slate-400 animate-scroll-indicator">
+                <span className="text-[11px] font-mono tracking-widest uppercase">Scroll to explore</span>
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Bento Architecture Cards & Source Selector (Scroll down section) */}
+          <section className="px-4 sm:px-6 lg:px-8 py-10 max-w-6xl mx-auto text-left">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+              <div>
+                <span className="font-mono text-xs text-rose-500 font-semibold tracking-wider">[ 01-03 // SYSTEM ARCHITECTURE ]</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 mt-1">
+                  Engineered for Native Experience
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 max-w-md">
+                Every calculation executes locally with zero network hops, giving users instantaneous page flipping and complete privacy.
+              </p>
+            </div>
+
+            {/* 3 Bento Cards with Frosted Aura Visual Windows */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
               {/* Card 01 */}
               <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
                 <div>
@@ -597,8 +712,6 @@ ${propLines}
             </div>
 
             {/* High-End Source Selector Surface */}
-{/* High-End Source Selector Surface */}
-{/* High-End Source Selector Surface */}
             <div className="max-w-2xl mx-auto bg-white border border-slate-200/90 rounded-2xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] overflow-hidden p-6 text-left">
               {/* Selector Tabs */}
               <div className="flex border-b border-slate-200 pb-3 mb-5 gap-6 text-xs font-medium">
@@ -692,79 +805,6 @@ ${propLines}
                   </div>
                 </form>
               )}
-            </div>
-          </section>
-
-          {/* Live Studio Viewer Section */}
-          <section id="studio" className="px-4 sm:px-8 lg:px-12 pb-16 max-w-[1440px] mx-auto">
-            <div className={`bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-[0_20px_50px_-20px_rgba(0,0,0,0.08)] flex flex-col ${stageHeightClasses[config.stageHeight]} w-full transition-all duration-300`}>
-              {/* Viewer Top Action Bar */}
-              <div className="h-11 px-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between text-xs text-slate-600 shrink-0">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 shrink-0 text-slate-700" />
-                  <span className="text-slate-900 font-semibold truncate max-w-xs">{fileName}</span>
-                  <span className="hidden sm:inline text-[10px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full font-mono">
-                    Client Sandbox
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleCopyShareLink}
-                    title="Share Direct Flipbook Link"
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-slate-700 cursor-pointer transition-colors shadow-xs"
-                  >
-                    {copiedShareLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-slate-500" />}
-                    <span className="hidden sm:inline">{copiedShareLink ? 'Link Copied!' : 'Share Link'}</span>
-                  </button>
-
-                  {/* Props Configurator Overlay Trigger */}
-                  <button
-                    onClick={() => setShowConfigDrawer(v => !v)}
-                    className="flex items-center gap-1.5 px-3 py-1 text-white rounded font-medium cursor-pointer transition-colors shadow-xs"
-                    style={{ backgroundColor: config.accentColor }}
-                  >
-                    <Sliders className="w-3.5 h-3.5" />
-                    <span>Configure Props</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Embedded React Component with 100% Height & Min-H-0 */}
-              <div className="flex-1 min-h-0 h-full relative">
-                <PdfFlipbook
-                  key={flipbookKey}
-                  src={pdfSource}
-                  theme={config.theme}
-                  mode={config.mode}
-                  toolbarPosition={config.toolbarPosition}
-                  toolbarStyle="glass-overlay"
-                  flippingTime={config.flippingTime}
-                  accentColor={config.accentColor}
-                  showLogo={config.showLogo}
-                  showToolbar={config.showToolbar}
-                  showSidebar={config.showSidebar}
-                  showNavigation={config.showNavigation}
-                  showSearch={config.showSearch}
-                  showOutline={config.showOutline}
-                  showBookmarks={config.showBookmarks}
-                  showThumbnails={config.showThumbnails}
-                  showAiSummary={config.showAiSummary}
-                  showZoom={config.showZoom}
-                  showPrint={config.showPrint}
-                  showSound={config.showSound}
-                  showFullscreen={config.showFullscreen}
-                  showThemeToggle={config.showThemeToggle}
-                  showViewToggle={config.showViewToggle}
-                  showFileUpload={config.showFileUpload}
-                  showUrlInput={config.showUrlInput}
-                  onFileSelect={(file) => {
-                    setPdfSource(file);
-                    setFileName(file.name);
-                  }}
-                  className="w-full h-full"
-                />
-              </div>
             </div>
           </section>
 

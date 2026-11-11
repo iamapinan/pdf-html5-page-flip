@@ -328,3 +328,62 @@ body.theme-wood .stf__wrapper::before {
   position: absolute;
   pointer-events: none;
 }
+
+/* Synex + Aura Hero Animations */
+@keyframes hero-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes hero-screen-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes scroll-pulse {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+.animate-hero-1 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-hero-2 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  opacity: 0;
+}
+
+.animate-hero-3 {
+  animation: hero-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-hero-screen-in {
+  animation: hero-fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+  opacity: 0;
+}
+
+.animate-hero-floating {
+  animation: hero-screen-float 6s ease-in-out infinite;
+}
+
+.animate-scroll-indicator {
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
