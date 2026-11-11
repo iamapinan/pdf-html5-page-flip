@@ -457,14 +457,20 @@ ${propLines}
         <main className="relative z-10">
           {/* Hero Section (Synex Editorial: ข้อความข้างบน + ภาพหน้าจอข้างล่าง + Animations) */}
           <section className="relative px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 max-w-[1400px] mx-auto text-center">
-{/* Top App Name Badge */}
-            <div className="animate-hero-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs mb-6">
-              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
-                PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
-              </span>
-              <span className="text-slate-300">•</span>
-              <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition</span>
+{/* Top App Name Badge & Feature Highlights */}
+            <div className="animate-hero-1 flex flex-wrap items-center justify-center gap-2.5 mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs">
+                <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+                <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
+                  PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition v2.1</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-rose-500/10 to-pink-500/10 border border-rose-200 text-rose-700 text-xs font-semibold shadow-xs">
+                <Sparkles className="w-3 h-3 text-rose-500" />
+                <span>New: Immersive Mode & AI Synthesis</span>
+              </div>
             </div>
 
             {/* Headline with Synex Typographic Contrast */}
@@ -489,6 +495,16 @@ ${propLines}
               >
                 <Upload className="w-4 h-4" />
                 <span>Upload Local PDF</span>
+              </button>
+
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('flipbook:toggle-immersive'))}
+                className="px-5 py-3 rounded-2xl text-slate-900 hover:text-black text-xs font-semibold bg-white/90 hover:bg-white border border-rose-300/80 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95 group hover:shadow-md"
+                title="Enlarge flipbook into distraction-free full screen with blurred transparent backdrop (Shortcut: F or I)"
+              >
+                <Maximize2 className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
+                <span>Enter Immersive Mode</span>
+                <kbd className="text-[10px] bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded font-mono text-slate-600">F</kbd>
               </button>
 
               <button
@@ -745,6 +761,82 @@ ${propLines}
                   </div>
                 </div>
               </div>
+
+              {/* Card 04: Immersive Theater Reading */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-rose-500 tracking-wider">[ 04 ]</span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+                      NEW V2.1
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    Immersive Theater Mode
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Enlarges out from the page container into a full-screen reading theater with real-time frosted glass backdrop (<code className="font-mono text-[11px] text-slate-700">backdrop-blur-3xl</code>) and ambient aura radiance.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 30% 30%, rgba(244, 63, 94, 0.4) 0%, rgba(168, 85, 247, 0.3) 50%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      HOTKEY: F / I / ESC
+                    </span>
+                    <Maximize2 className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Scale Factor</span>
+                      <span className="font-mono font-bold text-purple-600">Full Viewport (Zero Frame)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 05: Multi-Model AI Synthesis */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between md:col-span-2">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-amber-500 tracking-wider">[ 05 ]</span>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      GEMINI • OPENAI • OFFLINE
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    Multi-Model AI Document Intelligence
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Extracts vector glyphs on active spreads and synthesizes instant executive briefings. Switch on the fly between Google Gemini 2.5 Flash, OpenAI GPT-4o, or zero-network browser-native NLP extractive summarization.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 70% 50%, rgba(251, 191, 36, 0.45) 0%, rgba(244, 63, 94, 0.3) 50%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      PROVIDER HOT-SWAPPING
+                    </span>
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Supported Engines</span>
+                      <span className="font-mono font-bold text-amber-600">Gemini 2.5 Flash / GPT-4o / Local NLP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Editorial Transition Header */}
@@ -848,6 +940,8 @@ ${propLines}
             <a href="#features-guide" className="hover:text-slate-900 underline decoration-slate-300">4. Key Features</a>
             <span className="text-slate-300">•</span>
             <a href="#keyboard" className="hover:text-slate-900 underline decoration-slate-300">5. Keyboard & Gestures</a>
+            <span className="text-slate-300">•</span>
+            <a href="#ai-guide" className="hover:text-slate-900 font-semibold text-rose-600 underline decoration-rose-300">6. AI Model Setup Guide</a>
           </div>
 
           {/* Section 1: Quick Start */}
@@ -1075,29 +1169,176 @@ export default function PdfReaderPage() {
             </div>
           </section>
 
-          {/* Section 5: Keyboard Shortcuts & Gestures */}
+          {/* Section 5: Keyboard Shortcuts & Interaction */}
           <section id="keyboard" className="mb-14 scroll-mt-20">
             <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center text-xs">5</span>
-              Keyboard Shortcuts & Interaction
+              Complete Keyboard Shortcuts & Physical Gestures
             </h2>
-            <div className="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-xs">
+            <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs">
               <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y divide-slate-100 text-xs text-center">
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">←</kbd> / <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">→</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">Turn Page</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">←</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">→</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Space</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Flip Previous / Next Page</p>
                 </div>
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Home</kbd> / <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">End</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">First / Last Page</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">F</kbd>
+                    <span className="text-slate-400">/</span>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">I</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Toggle Immersive Theater Mode</p>
                 </div>
                 <div className="p-4">
-                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">F</kbd>
-                  <p className="mt-2 text-slate-600 font-medium">Toggle Fullscreen</p>
+                  <kbd className="px-2 py-1 bg-rose-50 border border-rose-300 text-rose-700 rounded font-mono text-[11px] font-bold">ESC</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Exit Immersive / Close Modals</p>
                 </div>
                 <div className="p-4">
-                  <span className="font-semibold text-slate-800">Touch Drag</span>
-                  <p className="mt-2 text-slate-600 font-medium">Realistic Page Curl</p>
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">Home</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">End</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Jump to First / Last Page</p>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center justify-center gap-1">
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">+</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">-</kbd>
+                    <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">0</kbd>
+                  </div>
+                  <p className="mt-2 text-slate-600 font-medium">Zoom In / Zoom Out / Reset</p>
+                </div>
+                <div className="p-4">
+                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">M</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Mute / Unmute Paper Audio</p>
+                </div>
+                <div className="p-4">
+                  <kbd className="px-2 py-1 bg-slate-100 border border-slate-300 rounded font-mono text-[11px] text-slate-800">S</kbd>
+                  <p className="mt-2 text-slate-600 font-medium">Toggle Navigation Sidebar</p>
+                </div>
+                <div className="p-4">
+                  <span className="font-semibold text-slate-800">Touch / Swipe</span>
+                  <p className="mt-2 text-slate-600 font-medium">Natural 3D Page Peel Physics</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+                    {/* Section 6: AI Model Configuration Guide */}
+          <section id="ai-guide" className="mb-14 scroll-mt-20">
+            <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-md bg-gradient-to-r from-rose-500 to-amber-500 text-white flex items-center justify-center text-xs font-bold">6</span>
+              AI Model Configuration & Document Synthesis Guide
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+              PDF HTML5 Page Flip Pro includes a high-performance client-side document intelligence layer capable of synthesizing active page content and multi-page chapters. You can run 100% offline or connect directly to frontier LLMs.
+            </p>
+
+            {/* Provider Comparison Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {/* Local / Offline */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    DEFAULT • 100% PRIVATE
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">Browser-Native Extractive NLP</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Uses high-frequency sentence scoring and TF-IDF extraction inside the client sandbox. Zero network calls, zero API key required, zero latency.
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Completely Free<br />
+                  <span className="font-semibold text-slate-800">Setup:</span> 0 seconds (Out-of-the-box)
+                </div>
+              </div>
+
+              {/* Google Gemini */}
+              <div className="bg-white border border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-rose-400/20 to-amber-400/20 rounded-bl-full pointer-events-none" />
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-semibold mb-3">
+                    <Sparkles className="w-3 h-3 text-rose-500" />
+                    RECOMMENDED
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">Google Gemini API</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Sub-second generative document synthesis with deep reasoning. Supports <code className="font-mono text-slate-700 font-semibold">gemini-2.5-flash</code>, <code className="font-mono text-slate-700">gemini-2.0-flash</code>, and <code className="font-mono text-slate-700">gemini-1.5-pro</code>.
+                  </p>
+                </div>
+                <div className="bg-rose-50/50 rounded-xl p-3 border border-rose-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Free Tier available<br />
+                  <span className="font-semibold text-slate-800">Key:</span> <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-rose-600 font-semibold underline">Get free key at Google AI Studio ↗</a>
+                </div>
+              </div>
+
+              {/* OpenAI ChatGPT */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-semibold mb-3">
+                    OPENAI ENGINE
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 mb-1">OpenAI ChatGPT</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                    Industry standard LLM synthesis. Supports cost-efficient <code className="font-mono text-slate-700 font-semibold">gpt-4o-mini</code> and comprehensive <code className="font-mono text-slate-700">gpt-4o</code>.
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-800">Cost:</span> Pay-per-token API<br />
+                  <span className="font-semibold text-slate-800">Key:</span> <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-indigo-600 font-semibold underline">OpenAI Platform ↗</a>
+                </div>
+              </div>
+            </div>
+
+            {/* How to Configure Instructions */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+              <h3 className="text-base font-bold text-slate-900">How to Configure in Your Application</h3>
+
+              <div className="space-y-4 text-xs text-slate-600">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Via Interactive UI (Zero Code)</h4>
+                    <p className="leading-relaxed">
+                      Click the <span className="font-semibold text-slate-800">Configure Props</span> button in the top navigation or click the ⚙️ gear icon in the <span className="font-semibold text-rose-600">AI Summary</span> modal. Select your preferred provider (Offline, Gemini, or OpenAI), choose a model, and paste your API key. Settings are automatically persisted in client <code className="font-mono text-slate-800 bg-slate-100 px-1 py-0.5 rounded">localStorage</code>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Via Programmatic Pre-Configuration</h4>
+                    <p className="leading-relaxed mb-3">
+                      To pre-configure your company or user's API credentials programmatically without requiring manual user input, set the synchronized localStorage keys prior to component mount:
+                    </p>
+                    <pre className="p-3 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] overflow-x-auto leading-relaxed">
+// Pre-configure Google Gemini 2.5 Flash
+localStorage.setItem('flipbook_ai_provider', 'gemini');
+localStorage.setItem('flipbook_ai_gemini_model', 'gemini-2.5-flash');
+localStorage.setItem('flipbook_ai_gemini_key', process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+
+// Or pre-configure OpenAI GPT-4o-mini
+localStorage.setItem('flipbook_ai_provider', 'openai');
+localStorage.setItem('flipbook_ai_openai_model', 'gpt-4o-mini');
+localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_API_KEY || '');
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-xs mb-1">Direct Client Privacy Protocol</h4>
+                    <p className="leading-relaxed">
+                      All LLM synthesis calls execute <span className="font-semibold text-slate-900">directly from the client browser via HTTPS</span> to Google AI or OpenAI endpoints. No intermediary servers, proxies, or analytics telemetry are used.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -21,14 +21,15 @@ Live Production Website: [https://flipbook.apps.gracer.ai](https://flipbook.apps
 
 ## Key Highlights and Architecture
 
+* Immersive Reading Theater Mode: Enlarges the flipbook out from the container to span the entire screen with a high-end frosted glass backdrop (`backdrop-blur-3xl`) and ambient aura illumination.
+* Multi-Model AI Document Intelligence: On-demand executive summaries with live provider switching between Google Gemini 2.5 Flash, OpenAI GPT-4o, or 100% private offline browser-native extractive NLP.
 * 100% Client-Side Privacy: All parsing and rendering execute directly in the browser runtime using PDF.js and Web Workers. Confidential documents never leave the client device.
-* High Performance Display: Dynamic viewport calculation with hardware acceleration, responsive page scaling, and automatic memory cleanup for distant pages.
-* Remote PDF and Deep Link Support: Open public remote PDFs directly through the user interface or URL parameters (`?pdf=https://example.com/doc.pdf`) with automated CORS proxy fallback.
-* Customizable Appearance and Branding: Toggle brand logo, adjust theme (Dark, Light, Wood), configure accent colors, and customize toolbar items.
-* Synthesized Page-Turn Audio: Dynamically creates realistic paper friction sounds on-the-fly via the Web Audio API without external audio files or network requests.
-* HiDPI and Retina Sharpness: Canvases scale dynamically based on `window.devicePixelRatio` for sharp rendering across all displays and zoom levels.
-* Full-Text Search and Dynamic Outline: Scans and indexes document text with context snippets and extracts native PDF bookmarks for a Table of Contents.
-* AI Document Assistant: Extracts active page text to deliver concise executive summaries on demand.
+* 60 FPS GPU Paper Peel Simulation: GPU cubic-bezier physics, realistic curvature, dynamic book spine shadow depth, and natural paper friction audio.
+* Complete Keyboard Navigation: Full hotkey matrix for distraction-free reading (`Arrows`, `Space`, `PageUp/Down`, `Home/End`, `F`, `I`, `ESC`, `+`, `-`, `0`, `M`, `S`).
+* Synthesized Paper Audio: Dynamically generates organic paper friction sounds on-the-fly via the Web Audio API without external audio files or network overhead.
+* HiDPI and Retina Sharpness: Canvases scale dynamically based on `window.devicePixelRatio` for crisp text and illustrations across all zoom levels.
+* Full-Text Search & Native Outline: Scans and indexes document text with context snippets and extracts native PDF bookmarks for hierarchical Table of Contents navigation.
+* Drop-in Component: Available as both a type-safe React component (`<PdfFlipbook />`) and a zero-dependency Web Component (`<pdf-flipbook>`).
 
 ---
 
@@ -93,7 +94,9 @@ export default function DocumentViewer() {
 | `showZoom` | `boolean` | `true` | Enable zoom in, zoom out, and fit controls |
 | `showPrint` | `boolean` | `true` | Enable single-page image export and print |
 | `showSound` | `boolean` | `true` | Enable synthesized paper friction audio |
-| `showFullscreen`| `boolean` | `true` | Enable fullscreen toggle button |
+| `immersive` | `boolean` | `false` | Enable immersive reading mode (expands full screen with blurred glass backdrop) |
+| `onImmersiveChange` | `(isImmersive: boolean) => void` | `undefined` | Callback fired when immersive mode toggles |
+| `showFullscreen`| `boolean` | `true` | Enable fullscreen / immersive mode toggle button |
 | `showThemeToggle`| `boolean`| `true` | Enable theme cycler in toolbar |
 | `showViewToggle` | `boolean` | `true` | Enable single/double page switcher button |
 | `showFileUpload` | `boolean` | `true` | Enable local PDF picker button |
@@ -104,6 +107,74 @@ export default function DocumentViewer() {
 | `onFileSelect` | `(file: File) => void` | `undefined` | Callback fired when a local file is opened inside viewer |
 
 ---
+
+---
+
+## Immersive Reading Mode
+
+Immersive Mode enlarges the flipbook out of the standard page frame into a distraction-free, full-screen reading theater:
+
+* Frosted Glass Backdrop: Utilizes real-time hardware-accelerated CSS `backdrop-filter: blur(32px)` with subtle ambient aura lighting.
+* Automatic Viewport Adaptation: Dynamically re-measures available screen width and height to render the largest possible dual-page or single-page spread.
+* Keyboard-First Interaction: Toggle instantly using `F` or `I`, and exit seamlessly using `ESC`.
+* Programmatic Control: Pass the `immersive={true}` prop or dispatch `window.dispatchEvent(new CustomEvent('flipbook:toggle-immersive'))`.
+
+---
+
+## AI Document Intelligence and Model Configuration
+
+PDF HTML5 Page Flip Pro features an integrated, multi-provider AI document synthesis engine:
+
+### Supported AI Providers
+
+1. Offline Extractive NLP (Default):
+   * 100% Free and Private: Runs entirely inside the client sandbox using TF-IDF sentence scoring.
+   * Zero Setup: No API keys or network connection required.
+2. Google Gemini API:
+   * Models: `gemini-2.5-flash` (recommended for speed and intelligence), `gemini-2.0-flash`, `gemini-1.5-pro`.
+   * Setup: Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
+3. OpenAI ChatGPT:
+   * Models: `gpt-4o-mini` (cost-efficient) and `gpt-4o` (high intelligence).
+   * Setup: Obtain an API key from the [OpenAI Platform](https://platform.openai.com/api-keys).
+
+### Programmatic Configuration
+
+Configure credentials programmatically in your application before rendering the component:
+
+```typescript
+// Pre-configure Google Gemini 2.5 Flash
+localStorage.setItem('flipbook_ai_provider', 'gemini');
+localStorage.setItem('flipbook_ai_gemini_model', 'gemini-2.5-flash');
+localStorage.setItem('flipbook_ai_gemini_key', process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+
+// Or pre-configure OpenAI GPT-4o-mini
+localStorage.setItem('flipbook_ai_provider', 'openai');
+localStorage.setItem('flipbook_ai_openai_model', 'gpt-4o-mini');
+localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_API_KEY || '');
+```
+
+### Direct Client Privacy Protocol
+
+All generative synthesis requests execute directly from the client browser via encrypted HTTPS to Google AI or OpenAI endpoints. Confidential document data is never sent to intermediate proxies or third-party tracking services.
+
+---
+
+## Complete Keyboard Shortcuts Reference
+
+| Key | Action |
+|---|---|
+| `Arrow Right` / `Page Down` / `Space` | Turn to next page |
+| `Arrow Left` / `Page Up` | Turn to previous page |
+| `Home` | Jump to first page (Cover) |
+| `End` | Jump to last page (Back Cover) |
+| `F` / `I` | Toggle Immersive Theater Mode |
+| `Escape` | Exit Immersive Mode / Close active modals |
+| `+` / `=` | Zoom in (up to 200%) |
+| `-` / `_` | Zoom out (down to 60%) |
+| `0` | Reset zoom to 100% |
+| `M` | Toggle paper friction audio mute |
+| `S` | Toggle left navigation sidebar (TOC / Thumbs) |
+| `Touch Swipe` | Natural 3D paper peel physics |
 
 ## Web Component Usage (Vanilla HTML or Non-React)
 

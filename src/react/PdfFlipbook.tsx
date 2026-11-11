@@ -194,17 +194,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
     return () => window.removeEventListener('flipbook:toggle-immersive', handleCustomToggle);
   }, [toggleImmersive]);
 
-  // Esc key exits immersive
-  useEffect(() => {
-    if (!isImmersive) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        toggleImmersive(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isImmersive, toggleImmersive]);
+
 
 
 
@@ -760,6 +750,85 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       onPageChange?.(p, totalPages);
     }
   };
+
+  // Complete Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when user is typing in inputs or textareas
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // Escape: Close modals or exit immersive
+      if (e.key === 'Escape') {
+        if (isAiModalOpen) {
+          setIsAiModalOpen(false);
+          return;
+        }
+        if (isUrlModalOpen) {
+          setIsUrlModalOpen(false);
+          return;
+        }
+        if (isImmersive) {
+          toggleImmersive(false);
+          return;
+        }
+      }
+
+      // Next page
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        if (e.key === ' ') e.preventDefault();
+        pageFlipRef.current?.flipNext();
+      }
+      // Previous page
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        pageFlipRef.current?.flipPrev();
+      }
+      // First page
+      else if (e.key === 'Home') {
+        handleTurnToPage(1);
+      }
+      // Last page
+      else if (e.key === 'End') {
+        handleTurnToPage(totalPages);
+      }
+      // Toggle Immersive Mode (f or i)
+      else if ((e.key === 'f' || e.key === 'F' || e.key === 'i' || e.key === 'I') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        toggleImmersive();
+      }
+      // Zoom controls (+, -, 0)
+      else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setZoomLevel(z => Math.min(2.0, +(z + 0.15).toFixed(2)));
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        setZoomLevel(z => Math.max(0.6, +(z - 0.15).toFixed(2)));
+      } else if (e.key === '0') {
+        e.preventDefault();
+        setZoomLevel(1.0);
+      }
+      // Toggle Audio (m)
+      else if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey) {
+        setIsMuted(soundManager.toggleMute());
+      }
+      // Toggle Sidebar (s)
+      else if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
+        setIsSidebarOpen(v => !v);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAiModalOpen, isUrlModalOpen, isImmersive, totalPages, toggleImmersive]);
+
 
   // Toggle Bookmark
   const handleToggleBookmark = () => {
@@ -1341,16 +1410,28 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
               </button>
             )}
 
-            {showFullscreen && (
+            {isImmersive ? (
               <button
-                onClick={() => toggleImmersive()}
-                title={isImmersive ? "Exit Immersive Mode (Esc)" : "Enter Immersive Mode"}
-                className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                  isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
-                }`}
+                onClick={() => toggleImmersive(false)}
+                title="Exit Immersive Mode (Esc)"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-xs shadow-md cursor-pointer transition-all active:scale-95 shrink-0 ml-1"
               >
-                <Expand className="w-4 h-4" />
+                <Minimize2 className="w-3.5 h-3.5" />
+                <span>Exit</span>
+                <kbd className="text-[9px] bg-black/30 px-1.5 py-0.5 rounded font-mono">ESC</kbd>
               </button>
+            ) : (
+              showFullscreen && (
+                <button
+                  onClick={() => toggleImmersive(true)}
+                  title="Enter Immersive Reading Mode (F / I)"
+                  className={`p-2 rounded-lg transition-colors cursor-pointer ${
+                    isLight ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Expand className="w-4 h-4" />
+                </button>
+              )
             )}
           </div>
         </div>
@@ -1371,22 +1452,15 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         ['--flip-accent' as any]: accentColor
       }}
     >
-      {/* Immersive Floating Banner */}
+      {/* Non-overlapping discrete close button for Immersive Mode */}
       {isImmersive && (
-        <div className="absolute top-3 sm:top-5 right-3 sm:right-6 z-50 flex items-center gap-2 animate-in fade-in slide-in-from-top-3 duration-300 pointer-events-auto">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/15 text-[11px] text-slate-200 font-medium shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Immersive Reading Mode</span>
-          </div>
-          <button
-            onClick={() => toggleImmersive(false)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-xl border border-white/25 shadow-2xl text-xs font-semibold cursor-pointer transition-all hover:scale-105 active:scale-95"
-            title="Exit Immersive Mode (Esc)"
-          >
-            <Minimize2 className="w-3.5 h-3.5 text-rose-300" />
-            <span>Exit Immersive <kbd className="ml-1 text-[10px] bg-black/40 border border-white/20 px-1.5 py-0.5 rounded font-mono">ESC</kbd></span>
-          </button>
-        </div>
+        <button
+          onClick={() => toggleImmersive(false)}
+          title="Exit Immersive Mode (Esc)"
+          className="fixed top-3.5 right-4 sm:top-4 sm:right-6 z-50 w-9 h-9 rounded-full bg-slate-900/80 hover:bg-slate-900 text-slate-300 hover:text-white border border-white/20 shadow-xl flex items-center justify-center cursor-pointer transition-all hover:scale-105 active:scale-95 backdrop-blur-md pointer-events-auto"
+        >
+          <X className="w-4 h-4" />
+        </button>
       )}
       {/* Top Dedicated Toolbar Slot (Never overlaps book) */}
       {showToolbar && toolbarPosition === 'top' && (
