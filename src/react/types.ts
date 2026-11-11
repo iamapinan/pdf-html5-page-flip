@@ -1,6 +1,8 @@
 import * as pdfjsLib from 'pdfjs-dist';
 
 export interface PdfFlipbookProps {
+  /** Enable double click or double tap on paper to zoom (default: true) */
+  doubleClickZoom?: boolean;
   /** Enable immersive mode (expands full screen with blurred transparent background) */
   immersive?: boolean;
   /** Callback fired when immersive mode changes */

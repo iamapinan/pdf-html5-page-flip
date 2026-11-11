@@ -146,6 +146,7 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
   showViewToggle = true,
   showFileUpload = true,
   showUrlInput = true,
+  doubleClickZoom = true,
   flippingTime = 800,
   immersive: propImmersive,
   onImmersiveChange,
@@ -738,6 +739,40 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
       e.currentTarget.scrollLeft += e.deltaY;
     }
   };
+
+  
+  
+  // Native Double Click & Tap to Zoom Listener directly on stage
+  useEffect(() => {
+    const stage = mountWrapperRef.current;
+    if (!stage || !doubleClickZoom) return;
+
+    let lastTap = 0;
+    const onDblClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, textarea, a, select')) return;
+      setZoomLevel(prev => (prev > 1.05 ? 1.0 : 1.6));
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, textarea, a, select')) return;
+      const now = Date.now();
+      if (now - lastTap < 320) {
+        setZoomLevel(prev => (prev > 1.05 ? 1.0 : 1.6));
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    };
+
+    stage.addEventListener('dblclick', onDblClick);
+    stage.addEventListener('touchend', onTouchEnd);
+    return () => {
+      stage.removeEventListener('dblclick', onDblClick);
+      stage.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [doubleClickZoom]);
 
   const handleTurnToPage = (p: number) => {
     if (p >= 1 && p <= totalPages && pageFlipRef.current) {
@@ -1678,7 +1713,8 @@ export const PdfFlipbook: React.FC<PdfFlipbookProps> = ({
         <main
           id="stage"
           ref={mountWrapperRef}
-          className="flex-1 flex justify-center items-center overflow-hidden relative w-full h-full min-h-0"
+          className="flex-1 flex justify-center items-center overflow-hidden relative w-full h-full min-h-0 cursor-zoom-in"
+          title={doubleClickZoom ? "Double-click or double-tap to zoom" : undefined}
         >
           {isLoading && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm gap-4">

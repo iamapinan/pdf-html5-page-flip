@@ -214,7 +214,8 @@ export function App() {
     showThemeToggle: true,
     showViewToggle: true,
     showFileUpload: true,
-    showUrlInput: true
+    showUrlInput: true,
+    doubleClickZoom: true
   });
 
   // Global hidden file input ref
@@ -457,20 +458,14 @@ ${propLines}
         <main className="relative z-10">
           {/* Hero Section (Synex Editorial: ข้อความข้างบน + ภาพหน้าจอข้างล่าง + Animations) */}
           <section className="relative px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 max-w-[1400px] mx-auto text-center">
-{/* Top App Name Badge & Feature Highlights */}
-            <div className="animate-hero-1 flex flex-wrap items-center justify-center gap-2.5 mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs">
-                <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
-                <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
-                  PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition v2.1</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-rose-500/10 to-pink-500/10 border border-rose-200 text-rose-700 text-xs font-semibold shadow-xs">
-                <Sparkles className="w-3 h-3 text-rose-500" />
-                <span>New: Immersive Mode & AI Synthesis</span>
-              </div>
+{/* Top App Name Badge */}
+            <div className="animate-hero-1 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/85 backdrop-blur-md shadow-xs mb-6">
+              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+              <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900">
+                PDF HTML5 Page Flip <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 font-extrabold">Pro</span>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-[11px] font-mono text-slate-500 font-medium">Aura Edition</span>
             </div>
 
             {/* Headline with Synex Typographic Contrast */}
@@ -606,6 +601,7 @@ ${propLines}
                     accentColor={config.accentColor}
                     showLogo={config.showLogo}
                     showToolbar={config.showToolbar}
+                    doubleClickZoom={config.doubleClickZoom}
                     showSidebar={config.showSidebar}
                     showNavigation={config.showNavigation}
                     showSearch={config.showSearch}
@@ -1310,24 +1306,24 @@ export default function PdfReaderPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 w-full min-w-0">
                   <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
-                  <div>
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <h4 className="font-bold text-slate-900 text-xs mb-1">Via Programmatic Pre-Configuration</h4>
                     <p className="leading-relaxed mb-3">
                       To pre-configure your company or user's API credentials programmatically without requiring manual user input, set the synchronized localStorage keys prior to component mount:
                     </p>
-                    <pre className="p-3 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] overflow-x-auto leading-relaxed">
-// Pre-configure Google Gemini 2.5 Flash
+                    <div className="w-full max-w-full overflow-x-auto rounded-xl bg-slate-950 p-4 border border-slate-800 shadow-inner">
+                      <pre className="text-slate-200 font-mono text-[11px] leading-relaxed whitespace-pre block">{`// 1. Pre-configure Google Gemini 2.5 Flash (Recommended)
 localStorage.setItem('flipbook_ai_provider', 'gemini');
 localStorage.setItem('flipbook_ai_gemini_model', 'gemini-2.5-flash');
 localStorage.setItem('flipbook_ai_gemini_key', process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
-// Or pre-configure OpenAI GPT-4o-mini
+// 2. Or pre-configure OpenAI ChatGPT (gpt-4o-mini)
 localStorage.setItem('flipbook_ai_provider', 'openai');
 localStorage.setItem('flipbook_ai_openai_model', 'gpt-4o-mini');
-localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_API_KEY || '');
-                    </pre>
+localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_API_KEY || '');`}</pre>
+                    </div>
                   </div>
                 </div>
 
@@ -1527,6 +1523,26 @@ localStorage.setItem('flipbook_ai_openai_key', process.env.NEXT_PUBLIC_OPENAI_AP
                 </div>
               )}
             </div>
+
+              {/* Double Click / Tap to Zoom Toggle */}
+              <div className="flex items-center justify-between py-2.5 border-b border-slate-100">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Double Click / Tap to Zoom</span>
+                  <span className="text-[10px] text-slate-400">Quickly toggle zoom (160% / 100%) on paper</span>
+                </div>
+                <button
+                  onClick={() => setConfig(c => ({ ...c, doubleClickZoom: !c.doubleClickZoom }))}
+                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                    config.doubleClickZoom ? 'bg-rose-500' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
+                      config.doubleClickZoom ? 'left-6' : 'left-1'
+                    }`}
+                  />
+                </button>
+              </div>
 
 {/* Toolbar Position Selector */}
             <div className="mb-5 border-b border-slate-200 pb-5">
