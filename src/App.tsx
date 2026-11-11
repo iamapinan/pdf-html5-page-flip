@@ -428,98 +428,176 @@ ${propLines}
       {/* VIEW: STUDIO VIEWER */}
       {activeView === 'studio' && (
         <main className="relative z-10">
-          {/* Hero Section (Synex Architectural & Swiss Editorial Layout) */}
-          <section className="relative px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14 max-w-6xl mx-auto">
+          {/* Hero Section (Synex Editorial + Aura Premium Infusion) */}
+          <section className="relative px-4 sm:px-6 pt-12 pb-10 sm:pt-16 sm:pb-14 max-w-6xl mx-auto text-center">
             {/* Top Monospace Tag Capsule */}
-            <div className="flex items-center justify-center sm:justify-start mb-6">
-              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-200/90 bg-white/85 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-                <span className="font-semibold text-slate-900 tracking-widest">[ SYSTEM // GPU ACCELERATION ]</span>
-                <span className="text-slate-300">/</span>
-                <span className="text-slate-500 font-sans">Aura Engine v2.1</span>
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-pink-200/90 bg-white/80 backdrop-blur-md shadow-xs text-slate-800 text-[11px] font-mono tracking-wider mb-6">
+              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 animate-pulse inline-block" />
+              <span className="font-semibold text-rose-950 tracking-widest">[ PDF CLIENT REIMAGINED // GPU SIMULATION ]</span>
+              <span className="text-pink-300">/</span>
+              <span className="text-slate-500 font-sans font-medium">Aura Edition v2.1</span>
+            </div>
+
+            {/* Headline with Synex Typographic Contrast */}
+            <h1 className="text-4xl sm:text-6xl lg:text-[70px] font-extrabold tracking-tight leading-[1.08] sm:leading-[1.03] text-slate-950 mb-4">
+              <span className="block text-slate-400 font-medium tracking-normal text-3xl sm:text-5xl lg:text-[54px] mb-1">
+                A New Standard
+              </span>
+              <span className="bg-gradient-to-r from-slate-950 via-slate-800 to-rose-900 bg-clip-text text-transparent">
+                in Digital Flipbooks.
+              </span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
+              A high-performance client-side runtime with genuine 60 FPS cubic-bezier peel physics, Web Audio acoustic friction synthesis, full-text search, and on-demand AI document synthesis.
+            </p>
+
+            {/* Quick Action Bar with Aura Glow */}
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+              <button
+                onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-6 py-3 rounded-2xl text-white text-xs font-bold shadow-md shadow-rose-500/25 hover:shadow-lg hover:shadow-rose-500/35 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/30"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Launch Interactive Studio</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => setActiveView('docs')}
+                className="px-5 py-3 rounded-2xl text-slate-800 hover:text-slate-950 text-xs font-semibold bg-white/80 hover:bg-white border border-white/90 shadow-xs transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+              >
+                <FileText className="w-4 h-4 text-rose-500" />
+                <span>Developer Manual</span>
+              </button>
+
+              <div
+                onClick={() => {
+                  navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
+                  setCopiedInstall(true);
+                  setTimeout(() => setCopiedInstall(false), 2000);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-mono bg-white/70 hover:bg-white border border-slate-200/90 text-slate-700 cursor-pointer shadow-xs transition-all active:scale-95"
+              >
+                <span className="text-rose-500 font-bold">&gt;_</span>
+                <span>npm i @iamapinan/pdf-html5-page-flip</span>
+                {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
               </div>
             </div>
 
-            {/* Asymmetric Swiss Grid Headline & Narrative */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end mb-10 text-left">
-              <div className="lg:col-span-7">
-                <h1 className="text-4xl sm:text-6xl lg:text-[66px] font-extrabold tracking-tight text-slate-950 leading-[1.06] sm:leading-[1.02]">
-                  The New Standard in Digital Flipbooks.
-                </h1>
+            {/* 3 Bento Cards with Frosted Aura Visual Windows (Synex Style) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12 text-left">
+              {/* Card 01 */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-rose-400 tracking-wider">[ 01 ]</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    100% Client-Side Privacy
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Decoded directly via Mozilla PDF.js inside Web Workers. Zero telemetry, zero cloud exposure.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 80% 20%, rgba(254, 240, 138, 0.55) 0%, rgba(251, 113, 133, 0.25) 50%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      LOCAL SANDBOX
+                    </span>
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Server Payload</span>
+                      <span className="font-mono font-bold text-emerald-600">0 KB (Direct DOM)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="lg:col-span-5 flex flex-col justify-end space-y-4">
-                <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
-                  A high-performance client-side runtime with genuine 60 FPS cubic-bezier peel physics, Web Audio acoustic friction synthesis, full-text search, and on-demand AI document synthesis.
-                </p>
-                <div className="flex flex-wrap items-center gap-3 pt-1">
-                  <button
-                    onClick={() => document.getElementById('studio')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all cursor-pointer flex items-center gap-2 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 active:scale-95 border border-white/25"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    <span>Launch Interactive Studio</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
 
-                  <div
-                    onClick={() => {
-                      navigator.clipboard.writeText('npm i @iamapinan/pdf-html5-page-flip');
-                      setCopiedInstall(true);
-                      setTimeout(() => setCopiedInstall(false), 2000);
-                    }}
-                    className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-mono bg-white/80 hover:bg-white border border-slate-200/90 text-slate-700 cursor-pointer shadow-xs transition-all active:scale-95"
-                  >
-                    <span className="text-rose-500 font-bold">&gt;_</span>
-                    <span>npm i @iamapinan/pdf-html5-page-flip</span>
-                    {copiedInstall ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+              {/* Card 02 */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-amber-500 tracking-wider">[ 02 ]</span>
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    60 FPS Peel Simulation
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    GPU cubic-bezier curvature, realistic spine shadow depth, and dynamic Web Audio friction.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 20% 80%, rgba(251, 113, 133, 0.45) 0%, rgba(254, 215, 170, 0.35) 50%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      PHYSICS EASING
+                    </span>
+                    <Volume2 className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Acoustic Friction</span>
+                      <span className="font-mono font-bold text-rose-600">60 FPS Web Audio</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 03 */}
+              <div className="group relative bg-white/75 hover:bg-white/90 backdrop-blur-xl border border-white/90 hover:border-pink-200/80 rounded-3xl p-6 shadow-[0_12px_32px_-8px_rgba(251,113,133,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(251,113,133,0.18)] transition-all duration-300 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-xs font-bold text-pink-500 tracking-wider">[ 03 ]</span>
+                    <span className="w-2 h-2 rounded-full bg-pink-400" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight mb-2">
+                    React & Next.js Drop-in
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Full TypeScript types, configurable liquid glass toolbars, custom accent color, and Web Component.
+                  </p>
+                </div>
+                {/* Frosted Aura Visual Window */}
+                <div
+                  className="h-28 rounded-2xl overflow-hidden relative border border-white/80 p-3.5 flex flex-col justify-between transition-transform duration-300 group-hover:scale-[1.02]"
+                  style={{
+                    background: 'radial-gradient(circle at 50% 50%, rgba(244, 114, 182, 0.4) 0%, rgba(254, 240, 138, 0.3) 60%, rgba(255, 255, 255, 0.85) 100%)'
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/80 border border-white text-slate-700 font-semibold shadow-xs">
+                      TYPESCRIPT
+                    </span>
+                    <Code2 className="w-4 h-4 text-pink-600" />
+                  </div>
+                  <div className="bg-white/85 backdrop-blur-md rounded-xl p-2.5 border border-white shadow-xs">
+                    <div className="flex items-center justify-between text-[11px] font-medium text-slate-800">
+                      <span>Component</span>
+                      <span className="font-mono font-bold text-pink-600">&lt;PdfFlipbook /&gt;</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 3 Bento Architectural Index Cards [ 01 ], [ 02 ], [ 03 ] */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
-              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 01 ]</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
-                  100% Client-Side Privacy
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Decoded directly via Mozilla PDF.js inside dedicated Web Workers. Zero telemetry, zero cloud storage exposure.
-                </p>
-              </div>
-
-              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 02 ]</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
-                  60 FPS Peel Simulation
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  GPU-accelerated cubic-bezier curvature, realistic spine shadow depth, and dynamic Web Audio paper friction.
-                </p>
-              </div>
-
-              <div className="group relative bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/80 rounded-2xl p-5 shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-bold text-slate-400 tracking-wider">[ 03 ]</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1.5">
-                  React & Next.js Drop-in
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Full TypeScript types, configurable liquid glass toolbars, custom accent color, and vanilla Web Component.
-                </p>
-              </div>
-            </div>
-
             {/* High-End Source Selector Surface */}
+{/* High-End Source Selector Surface */}
 {/* High-End Source Selector Surface */}
             <div className="max-w-2xl mx-auto bg-white border border-slate-200/90 rounded-2xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] overflow-hidden p-6 text-left">
               {/* Selector Tabs */}
