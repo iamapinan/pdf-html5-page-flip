@@ -53,6 +53,8 @@ export interface PdfFlipbookProps {
   showFileUpload?: boolean;
   /** Enable open remote PDF via URL button (default: true) */
   showUrlInput?: boolean;
+  /** Enable keyboard & gesture shortcuts button & modal (default: true) */
+  showShortcuts?: boolean;
   /** Flipping animation time in ms (default: 600) */
   flippingTime?: number;
   /** Custom container CSS class */

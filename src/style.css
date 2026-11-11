@@ -125,7 +125,13 @@ body.theme-wood {
 .flipbook-container {
   display: block;
   position: relative;
+  --pan-x: 0px;
+  --pan-y: 0px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flipbook-container.is-panning {
+  transition: none !important;
 }
 
 /* Base StPageFlip parent element */
@@ -140,23 +146,24 @@ body.theme-wood {
   border-radius: 12px;
 }
 
-/* Horizontal Centering:
+/* Horizontal Centering & Panning:
    In dual-page mode:
    - When on page 1 (cover), the right half has the cover; translate container left by 25% of spread width to center cover in stage!
    - When on last page (back cover), the left half has the back cover; translate container right by 25% to center back cover!
    - When on open spreads or single page mode, translateX(0) for symmetrical alignment!
+   - Integrated with --pan-x and --pan-y for smooth mouse/touch pan navigation when zoomed in!
 */
 .flipbook-container.book-state-first-page {
-  transform: translateX(-25%);
+  transform: translateX(calc(-25% + var(--pan-x))) translateY(var(--pan-y));
 }
 
 .flipbook-container.book-state-last-page {
-  transform: translateX(25%);
+  transform: translateX(calc(25% + var(--pan-x))) translateY(var(--pan-y));
 }
 
 .flipbook-container.book-state-open,
 .flipbook-container.book-state-single {
-  transform: translateX(0);
+  transform: translateX(var(--pan-x)) translateY(var(--pan-y));
 }
 
 /* Dynamic Window-Style 4-Sided Ambient Book Shadow */

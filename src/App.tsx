@@ -27,7 +27,8 @@ import {
   Search,
   Grid,
   Terminal,
-  Laptop
+  Laptop,
+  Keyboard
 } from 'lucide-react';
 import { PdfFlipbook } from './react/PdfFlipbook';
 
@@ -426,6 +427,17 @@ ${propLines}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: '?' }));
+              }}
+              title="Keyboard & Gesture Shortcuts (?)"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <Keyboard className="w-3.5 h-3.5 text-slate-600" />
+              <span>Shortcuts</span>
+              <kbd className="text-[10px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono border border-slate-200">?</kbd>
+            </button>
             <button
               onClick={() => setShowConfigDrawer(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-slate-950 bg-white/70 hover:bg-white border border-white/80 transition-all cursor-pointer shadow-xs active:scale-95"
@@ -1313,8 +1325,8 @@ export default function PdfReaderPage() {
                     <p className="leading-relaxed mb-3">
                       To pre-configure your company or user's API credentials programmatically without requiring manual user input, set the synchronized localStorage keys prior to component mount:
                     </p>
-                    <div className="w-full max-w-full overflow-x-auto rounded-xl bg-slate-950 p-4 border border-slate-800 shadow-inner">
-                      <pre className="text-slate-200 font-mono text-[11px] leading-relaxed whitespace-pre block">{`// 1. Pre-configure Google Gemini 2.5 Flash (Recommended)
+                    <div className="w-full max-w-full overflow-hidden rounded-xl bg-slate-950 p-4 border border-slate-800 shadow-inner">
+                      <pre className="text-slate-200 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words block">{`// 1. Pre-configure Google Gemini 2.5 Flash (Recommended)
 localStorage.setItem('flipbook_ai_provider', 'gemini');
 localStorage.setItem('flipbook_ai_gemini_model', 'gemini-2.5-flash');
 localStorage.setItem('flipbook_ai_gemini_key', process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
